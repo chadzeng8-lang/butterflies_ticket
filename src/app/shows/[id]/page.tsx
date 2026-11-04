@@ -2,10 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { OrderForm } from "@/components/OrderForm";
-import { getRemainingSeats, getShow } from "@/lib/db";
+import { getShow } from "@/lib/db";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { audiencePricingSummary, depositRuleNotice } from "@/lib/pricing-copy";
+import {
+  createSupabaseServerClient,
+  getSupabaseUser,
+} from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +21,9 @@ export default async function ShowPage({
   const { id } = await params;
   const show = getShow(Number(id));
   if (!show || !show.onSale) notFound();
-  const remaining = getRemainingSeats(show);
-  const maxQuantity = Math.min(5, remaining);
   const totalPay = show.ticketPriceCents + show.depositCents;
+  const supabase = await createSupabaseServerClient();
+  const user = await getSupabaseUser(supabase);
 
   return (
     <main className="shell shell-narrow">
@@ -54,10 +58,15 @@ export default async function ShowPage({
 
         <article className="panel">
           <h2>登记信息</h2>
-          {remaining < 1 ? (
-            <p className="muted">本场已满，请返回选择其他场次。</p>
+          {!user ? (
+            <div className="notice">
+              <p>需先使用电邮账号登录，登录后即可登记场次。</p>
+              <Link className="btn" href={`/account?next=${encodeURIComponent(`/shows/${show.id}`)}`}>
+                登录或注册
+              </Link>
+            </div>
           ) : (
-            <OrderForm showId={show.id} maxQuantity={maxQuantity} />
+            <OrderForm showId={show.id} maxQuantity={5} />
           )}
           <p style={{ marginTop: "1.1rem" }}>
             <Link className="muted" href="/">

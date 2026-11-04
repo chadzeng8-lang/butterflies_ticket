@@ -1,16 +1,45 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-/** 轻量门禁：有 Cookie 才放行；真伪校验在各 admin 页面 / Server Action 内完成。 */
-export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  if (pathname === "/admin/login") return NextResponse.next();
-  if (req.cookies.get("mts_admin")?.value) return NextResponse.next();
-  const url = req.nextUrl.clone();
-  url.pathname = "/admin/login";
-  return NextResponse.redirect(url);
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/admin") && pathname !== "/admin/online-orders") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/online-orders";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) {
+    return NextResponse.next({ request });
+  }
+
+  let response = NextResponse.next({ request });
+  const supabase = createServerClient(url, key, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        for (const { name, value } of cookiesToSet) {
+          request.cookies.set(name, value);
+        }
+        response = NextResponse.next({ request });
+        for (const { name, value, options } of cookiesToSet) {
+          response.cookies.set(name, value, options);
+        }
+      },
+    },
+  });
+
+  await supabase.auth.getUser();
+  return response;
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/((?!login).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

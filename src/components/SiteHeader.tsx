@@ -24,7 +24,8 @@ export function SiteHeader() {
       <nav className="nav">
         <Link href="/">场次</Link>
         <Link href="/tickets">票夹</Link>
-        <Link href="/admin">干事</Link>
+        <Link href="/account">帳號</Link>
+        <Link href="/admin/online-orders">干事</Link>
         <button
           className="locale-toggle"
           type="button"

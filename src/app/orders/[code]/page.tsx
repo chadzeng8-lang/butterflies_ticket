@@ -7,6 +7,7 @@ import {
   getShow,
   getTicketsForOrder,
 } from "@/lib/db";
+import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { toDataUrl } from "@/lib/qr";
@@ -24,9 +25,10 @@ export default async function OrderPage({
 }) {
   const { code } = await params;
   const sp = await searchParams;
-  const order = getOrderWithShow(decodeURIComponent(code));
+  const supabaseRecord = await getSupabaseOrderWithShow(decodeURIComponent(code));
+  const order = supabaseRecord?.order ?? getOrderWithShow(decodeURIComponent(code));
   if (!order) notFound();
-  const show = getShow(order.showId);
+  const show = supabaseRecord?.show ?? getShow(order.showId);
   if (!show) notFound();
 
   const total = order.ticketTotalCents + order.depositTotalCents;
@@ -34,7 +36,7 @@ export default async function OrderPage({
     order.status === "issued" ||
     order.status === "checked_in" ||
     order.status === "deposit_refunded"
-      ? getTicketsForOrder(order.id)
+      ? supabaseRecord?.tickets ?? getTicketsForOrder(order.id)
       : [];
 
   const ticketQrs = await Promise.all(
@@ -144,7 +146,13 @@ export default async function OrderPage({
               )}
             </div>
             <div style={{ marginTop: "1.1rem" }}>
-              <MarkPaidForm code={order.code} />
+              {supabaseRecord ? (
+                <MarkPaidForm code={order.code} />
+              ) : (
+                <p className="muted">
+                  此为旧系统历史订单，请联系工作人员处理付款；历史订单不会自动迁移至在线账户。
+                </p>
+              )}
             </div>
           </article>
         )}

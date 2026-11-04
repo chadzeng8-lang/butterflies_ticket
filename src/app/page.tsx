@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getRemainingSeats, listShows, seedDemoShowIfEmpty } from "@/lib/db";
+import { listShows } from "@/lib/db";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { audiencePricingSummary } from "@/lib/pricing-copy";
@@ -45,9 +45,8 @@ const crew = [
 ];
 
 export default function HomePage() {
-  seedDemoShowIfEmpty();
   const shows = listShows(false);
-  const firstOpen = shows.find((show) => getRemainingSeats(show) > 0);
+  const firstOpen = shows[0];
   const featuredShow = shows[0];
 
   return (
@@ -124,10 +123,7 @@ export default function HomePage() {
           <div className="panel muted">暫無開售場次，請稍後再來。</div>
         ) : (
           <div className="show-list">
-            {shows.map((show) => {
-              const remaining = getRemainingSeats(show);
-              const soldOut = remaining === 0;
-              return (
+            {shows.map((show) => (
                 <article key={show.id} className="show-row">
                   <div className="show-date">
                     <h3>{formatShowTime(show.startsAt)}</h3>
@@ -139,22 +135,13 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="show-availability">
-                    <span className={`badge ${soldOut ? "danger" : ""}`}>
-                      {soldOut ? "已滿" : "開放登記"}
-                    </span>
+                    <span className="badge">開放登記</span>
                   </div>
-                  {soldOut ? (
-                    <button className="btn secondary" disabled>
-                      暫停登記
-                    </button>
-                  ) : (
-                    <Link className="btn show-booking-button" href={`/shows/${show.id}`}>
-                      登記本場 <span aria-hidden>→</span>
-                    </Link>
-                  )}
+                  <Link className="btn show-booking-button" href={`/shows/${show.id}`}>
+                    登記本場 <span aria-hidden>→</span>
+                  </Link>
                 </article>
-              );
-            })}
+            ))}
           </div>
         )}
       </section>

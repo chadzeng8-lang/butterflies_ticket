@@ -1,15 +1,11 @@
 "use server";
 
-import fs from "fs";
-import path from "path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  createOrder,
-  getOrderByCode,
-  getUploadsDir,
-  markOrderPaid,
-} from "@/lib/db";
+  createSupabaseServerClient,
+  getSupabaseUser,
+} from "@/lib/supabase/server";
 
 export type ActionState = { error?: string };
 
@@ -23,46 +19,38 @@ function isNextRedirect(e: unknown): boolean {
   );
 }
 
-async function saveUploadAsync(file: File, prefix: string): Promise<string | null> {
-  if (!file || file.size === 0) return null;
-  if (file.size > 4 * 1024 * 1024) throw new Error("FILE_TOO_LARGE");
-  const ext = path.extname(file.name || "").toLowerCase() || ".jpg";
-  const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic"];
-  if (!allowed.includes(ext)) throw new Error("BAD_FILE_TYPE");
-  const dir = getUploadsDir();
-  const name = `${prefix}-${Date.now()}${ext}`;
-  const full = path.join(dir, name);
-  const buf = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(full, buf);
-  return name;
-}
-
 export async function createOrderAction(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
   try {
+    const supabase = await createSupabaseServerClient();
+    const user = await getSupabaseUser(supabase);
+    if (!user) redirect(`/account?next=/shows/${formData.get("showId")}`);
+
     const showId = Number(formData.get("showId"));
     const buyerName = String(formData.get("buyerName") || "");
     const phone = String(formData.get("phone") || "");
-    const contactExtra = String(formData.get("contactExtra") || "");
     const quantity = Number(formData.get("quantity") || "1");
 
-    if (!buyerName.trim() || !phone.trim()) {
+    if (!Number.isInteger(showId) || showId < 1 || !buyerName.trim() || !phone.trim()) {
       return { error: "请填写姓名与手机号。" };
     }
 
-    const order = createOrder({
-      showId,
-      buyerName,
-      phone,
-      contactExtra,
-      quantity,
+    const { data, error } = await supabase.rpc("create_ticket_order", {
+      p_show_id: showId,
+      p_buyer_name: buyerName,
+      p_phone: phone,
+      p_contact_extra: user.email || "",
+      p_quantity: quantity,
     });
+    if (error) throw new Error(error.message);
+    const result = Array.isArray(data) ? data[0] : data;
+    if (!result?.order_code) throw new Error("ORDER_CREATE_FAILED");
     revalidatePath("/");
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
-    redirect(`/orders/${order.code}`);
+    redirect(`/orders/${result.order_code}`);
   } catch (e) {
     if (isNextRedirect(e)) throw e;
     const msg = e instanceof Error ? e.message : "UNKNOWN";
@@ -70,8 +58,11 @@ export async function createOrderAction(
       SHOW_NOT_FOUND: "场次不存在。",
       SHOW_OFF_SALE: "该场次已停售。",
       BAD_QUANTITY: "每笔订单最多购买 5 张票。",
-      PERSON_TICKET_LIMIT: "同一购票人最多登记 5 张票，包含其他尚未取消的订单。",
       SOLD_OUT: "余票不足，请减少票数或换场。",
+      AUTH_REQUIRED: "請先登入電郵帳號再登記。",
+      PERSON_TICKET_LIMIT: "同一帳號最多登記 5 張票。",
+      AUTH_LOOKUP_FAILED: "登入状态检查失败，请重新登录。",
+      ORDER_CREATE_FAILED: "建立訂單失敗，請稍後再試。",
     };
     return { error: map[msg] || "下单失败，请稍后重试。" };
   }
@@ -82,18 +73,47 @@ export async function markPaidAction(
   formData: FormData
 ): Promise<ActionState> {
   let code = "";
+  let uploadedPath: string | null = null;
   try {
     code = String(formData.get("code") || "").trim().toUpperCase();
-    const order = getOrderByCode(code);
-    if (!order) return { error: "订单不存在。" };
+    const supabase = await createSupabaseServerClient();
+    const user = await getSupabaseUser(supabase);
+    if (!user) redirect("/account");
+
+    const { data: ownedOrder, error: orderLookupError } = await supabase
+      .from("orders")
+      .select("code")
+      .eq("code", code)
+      .maybeSingle();
+    if (orderLookupError) throw new Error("ORDER_LOOKUP_FAILED");
+    if (!ownedOrder) return { error: "订单不存在。" };
 
     const proof = formData.get("proof");
-    let proofPath: string | null = null;
     if (proof instanceof File && proof.size > 0) {
-      proofPath = await saveUploadAsync(proof, order.code);
+      if (proof.size > 4 * 1024 * 1024) throw new Error("FILE_TOO_LARGE");
+      if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(proof.type)) {
+        throw new Error("BAD_FILE_TYPE");
+      }
+      uploadedPath = `${user.id}/${code}/${Date.now()}`;
+      const { error: uploadError } = await supabase.storage
+        .from("payment-proofs")
+        .upload(uploadedPath, proof, { contentType: proof.type, upsert: false });
+      if (uploadError) throw new Error("PROOF_UPLOAD_FAILED");
     }
 
-    markOrderPaid(code, proofPath);
+    const { error } = await supabase.rpc("submit_ticket_payment", {
+      p_order_code: code,
+      p_payment_proof_path: uploadedPath,
+    });
+    if (error) {
+      if (uploadedPath) {
+        const { error: cleanupError } = await supabase.storage
+          .from("payment-proofs")
+          .remove([uploadedPath]);
+        if (cleanupError) throw new Error("PROOF_CLEANUP_FAILED");
+      }
+      throw new Error(error.message);
+    }
     revalidatePath(`/orders/${code}`);
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
@@ -107,6 +127,11 @@ export async function markPaidAction(
       ORDER_ALREADY_PAID: "订单已处理，无需重复提交。",
       FILE_TOO_LARGE: "截图请小于 4MB。",
       BAD_FILE_TYPE: "仅支持图片截图。",
+      ORDER_NOT_PAYABLE: "订单不存在、已过期或已提交付款。",
+      PROOF_UPLOAD_FAILED: "付款截图上传失败，请稍后重试。",
+      AUTH_LOOKUP_FAILED: "登入状态检查失败，请重新登录。",
+      ORDER_LOOKUP_FAILED: "订单查询失败，请稍后重试。",
+      PROOF_CLEANUP_FAILED: "付款截图处理失败，请联系工作人员。",
     };
     return { error: map[msg] || "提交失败，请稍后重试。" };
   }
