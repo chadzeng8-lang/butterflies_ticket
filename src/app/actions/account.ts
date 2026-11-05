@@ -58,7 +58,10 @@ export async function signUpAction(
   });
   if (error) return { error: "註冊失敗，請確認電郵格式並稍後再試。" };
   if (!data.session) {
-    return { message: "註冊成功。請到電郵收取驗證連結，驗證後再登入。" };
+    return {
+      message:
+        "註冊成功。請到電郵收取驗證連結，驗證後再登入。若未收到，請檢查垃圾郵件資料夾。",
+    };
   }
   redirect(nextPath);
 }

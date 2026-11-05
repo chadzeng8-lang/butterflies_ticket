@@ -192,7 +192,7 @@ export default async function OnlineOrdersPage({
                   : params.error === "email_recipient_missing"
                     ? "订单没有可用的账号电邮地址，无法发送出票通知。"
                     : params.error === "email_tracking"
-                      ? "邮件可能已发送，但写入发送记录失败。请先检查收件箱，再决定是否重发。"
+                      ? "邮件可能已发送，但写入发送记录失败。请先检查收件箱与垃圾邮件，再决定是否重发。"
                       : params.error === "sold_out"
                         ? "保存失败：该场次对外余票不足，请先调整库存或减少张数。"
                         : params.error === "quantity"
@@ -243,12 +243,14 @@ export default async function OnlineOrdersPage({
       {params.done && (
         <div className="success" role="status">
           {params.done === "email"
-            ? "出票邮件已发送。"
-            : params.done === "edit"
-              ? "订单已保存。"
-              : params.done === "save"
-                ? "票数已更新。"
-                : "订单状态已更新。"}
+            ? "出票邮件已发送。若未收到，请检查垃圾邮件。"
+            : params.done === "confirm"
+              ? "订单已确认并出票，邮件已发送。若未收到，请检查垃圾邮件。"
+              : params.done === "edit"
+                ? "订单已保存。"
+                : params.done === "save"
+                  ? "票数已更新。"
+                  : "订单状态已更新。"}
         </div>
       )}
       {orders.length === 0 ? (
