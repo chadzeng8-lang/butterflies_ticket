@@ -751,6 +751,7 @@ textarea {
 
 .show-section {
   padding-top: 3.2rem;
+  scroll-margin-top: 6rem;
 }
 
 .show-row {

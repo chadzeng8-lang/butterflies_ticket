@@ -1,7 +1,6 @@
 import { createSupabaseServerClient, getSupabaseUser } from "@/lib/supabase/server";
 import { SiteHeaderClient } from "@/components/SiteHeaderClient";
-
-const siteName = process.env.SITE_NAME || "《蝶》沉浸版展演";
+import { SITE_NAME } from "@/lib/site";
 
 export async function SiteHeader() {
   const supabase = await createSupabaseServerClient();
@@ -19,6 +18,6 @@ export async function SiteHeader() {
   }
 
   return (
-    <SiteHeaderClient siteName={siteName} isAdmin={isAdmin} />
+    <SiteHeaderClient siteName={SITE_NAME} isAdmin={isAdmin} />
   );
 }

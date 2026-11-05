@@ -148,7 +148,7 @@ export default async function HomePage() {
               </span>
             </div>
             {firstOpen ? (
-              <Link className="btn booking-button" href={`/shows/${firstOpen.id}`}>
+              <Link className="btn booking-button" href="#shows">
                 立即登記 <span aria-hidden>→</span>
               </Link>
             ) : (
@@ -349,7 +349,7 @@ export default async function HomePage() {
           测测你是《蝶》里的哪个人 <span aria-hidden>→</span>
         </Link>
         {firstOpen ? (
-          <Link className="btn" href={`/shows/${firstOpen.id}`}>選擇場次並登記 <span aria-hidden>→</span></Link>
+          <Link className="btn" href="#shows">選擇場次並登記 <span aria-hidden>→</span></Link>
         ) : (
           <button className="btn" disabled>暫無餘席</button>
         )}

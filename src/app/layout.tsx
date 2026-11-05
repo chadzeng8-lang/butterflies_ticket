@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { SITE_NAME } from "@/lib/site";
 import "./globals.css";
 
-const siteName = process.env.SITE_NAME || "《蝶》沉浸版展演";
-
 export const metadata: Metadata = {
-  title: siteName,
+  title: SITE_NAME,
   description: "香港中文大学音乐剧社年度大戏《蝶》沉浸版展演 · 公益登记与按金退还",
 };
 
