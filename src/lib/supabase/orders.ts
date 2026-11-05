@@ -3,6 +3,10 @@ import {
   createSupabaseServerClient,
   getSupabaseUser,
 } from "@/lib/supabase/server";
+import {
+  mapSupabaseShow,
+  type SupabaseShowRow,
+} from "@/lib/supabase/shows";
 
 type OrderRow = {
   id: number;
@@ -21,24 +25,6 @@ type OrderRow = {
   created_at: string;
   updated_at: string;
   expires_at: string;
-};
-
-type ShowRow = {
-  id: number;
-  title: string;
-  description: string;
-  venue: string;
-  starts_at: string;
-  capacity: number;
-  ticket_price_cents: number;
-  deposit_cents: number;
-  on_sale: boolean;
-  wechat_qr_path: string | null;
-  alipay_qr_path: string | null;
-  fps_qr_path: string | null;
-  payment_note: string;
-  created_at: string;
-  updated_at: string;
 };
 
 type TicketRow = {
@@ -69,26 +55,6 @@ function mapOrder(row: OrderRow): Order {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     expiresAt: row.expires_at,
-  };
-}
-
-function mapShow(row: ShowRow): Show {
-  return {
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    venue: row.venue,
-    startsAt: row.starts_at,
-    capacity: row.capacity,
-    ticketPriceCents: row.ticket_price_cents,
-    depositCents: row.deposit_cents,
-    onSale: row.on_sale ? 1 : 0,
-    wechatQrPath: row.wechat_qr_path,
-    alipayQrPath: row.alipay_qr_path,
-    fpsQrPath: row.fps_qr_path,
-    paymentNote: row.payment_note,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
   };
 }
 
@@ -131,7 +97,7 @@ export async function getSupabaseOrderWithShow(code: string): Promise<{
   if (!showData) return null;
 
   const order = mapOrder(orderRow);
-  const show = mapShow(showData as ShowRow);
+  const show = mapSupabaseShow(showData as SupabaseShowRow);
   const { data: ticketData, error: ticketError } = await supabase
     .from("tickets")
     .select("*")
@@ -184,7 +150,7 @@ export async function listSupabaseOrdersForCurrentUser(): Promise<Array<{
       if (ticketError) throw new Error("SUPABASE_TICKET_LOOKUP_FAILED");
 
       const order = mapOrder(row);
-      const show = mapShow(showData as ShowRow);
+      const show = mapSupabaseShow(showData as SupabaseShowRow);
       return {
         order: {
           ...order,

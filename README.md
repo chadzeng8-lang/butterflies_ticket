@@ -19,8 +19,8 @@ npm run dev
 
 浏览器打开 [http://localhost:3000](http://localhost:3000)。
 
-默认管理密码见 `.env.local` 中的 `ADMIN_PASSWORD`（示例为 `admin123`）。  
-首次访问首页会自动写入《蝶》两场正式场次。
+本地 JSON 旧后台的管理密码见 `.env.local` 中的 `ADMIN_PASSWORD`。线上售票使用 Supabase 场次和账号管理员，不使用这套旧密码后台。
+本地 JSON 开发环境首次访问首页会自动写入《蝶》两场正式场次；线上场次需在 Supabase 中维护。
 
 ## 干事操作说明书
 
@@ -65,6 +65,16 @@ npm run dev
 
 在 Supabase Dashboard 的 SQL Editor 运行后续迁移一次。它会导入当前两场演出的公开信息，
 并添加观众提交付款、管理员出票/关闭订单所需的数据库函数。演出 ID 与本地场次 ID 保持一致。
+如第二份迁移是在 2026-11-04 17:00 前执行，还需运行
+[`20261104174300_ticket_email_tracking.sql`](./supabase/migrations/20261104174300_ticket_email_tracking.sql)
+以加入出票邮件发送状态记录。
+人格结果、线上核销及免登录找票功能分别需要执行
+[`20261105094500_personality_results.sql`](./supabase/migrations/20261105094500_personality_results.sql)、
+[`20261105094600_online_checkin.sql`](./supabase/migrations/20261105094600_online_checkin.sql)、
+[`20261105094700_public_ticket_lookup.sql`](./supabase/migrations/20261105094700_public_ticket_lookup.sql)。
+公开场次 RLS 权限修正需执行
+[`20261105094800_public_show_access.sql`](./supabase/migrations/20261105094800_public_show_access.sql)；
+否则未登录访客查询开售场次会因权限不足而触发服务端错误。
 
 在 Supabase **Authentication → URL Configuration** 设置本地及部署后的 Site URL / Redirect URLs。
 应用需要以下环境变量（只填入本地 `.env.local` 或部署平台的环境变量，不要提交到 Git）：
@@ -94,11 +104,15 @@ where id = (
 ## 当前迁移状态与部署限制
 
 - 新账号使用 Supabase Auth；新订单写入 Supabase，付款截图存于私有 bucket，订单和电子票仅对买家/管理员开放。
+- 网站已整合《蝶》角色人格测试；登录账号可在 `/personality` 完成 24 题测试，并在账号页查看最新结果。启用该功能需执行
+  [`20261105094500_personality_results.sql`](./supabase/migrations/20261105094500_personality_results.sql)。
 - 管理员确认出票后，系统通过 Resend 发送邮件；发送失败时可在「Supabase 在线订单」重试。
 - 既有 `data/store.json` 订单作为历史存档保留，不会自动复制或关联到用户账号。
-- 场次展示及旧管理页面仍读取本地 JSON；请勿只在旧后台修改票价、场次或库存后就接受线上订单，数据库场次也必须保持一致。
-- 线上核销、场次管理与 CSV 导出仍未迁移。完成这些功能并验证邮件配置前，不要用于正式售票。
-- 配置完成后可部署到 Netlify；Netlify 环境变量需设置上述值及 `TICKET_SECRET`。仍应先用测试账号走完注册、下单、付款申报和管理员出票流程。
+- 线上首页、场次详情、订单和票夹读取 Supabase；Netlify 运行时不依赖本地 `data/store.json`。旧管理页面及本地 JSON 订单仅用于本机历史存档。
+- 线上核销请在 Supabase SQL Editor 执行对应迁移后使用 `/admin/online-checkin`。场次管理与 CSV 导出仍通过 Supabase 在线订单后台之外的本地旧后台处理。
+- Netlify 的 **Environment variables** 中需为 Production 配置本节列出的 Supabase URL、公钥、`NEXT_PUBLIC_SITE_URL`、`TICKET_SECRET`、`RESEND_API_KEY` 和 `EMAIL_FROM`。设置后重新部署。
+- 当前 Netlify 项目是通过 Netlify Drop 部署的；后续代码变更必须重新部署包含最新构建的版本。建议在 Netlify 连接 Git 仓库，让每次推送自动构建 Next.js 项目，而不是上传静态导出目录。
+- 正式售票前，用测试账号验证首页场次、注册登录、下单、付款申报、管理员出票、电子票和核销完整流程。
 
 ## 技术栈
 

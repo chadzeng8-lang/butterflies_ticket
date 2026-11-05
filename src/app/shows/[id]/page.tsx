@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { OrderForm } from "@/components/OrderForm";
-import { getShow } from "@/lib/db";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { audiencePricingSummary, depositRuleNotice } from "@/lib/pricing-copy";
@@ -10,6 +9,7 @@ import {
   createSupabaseServerClient,
   getSupabaseUser,
 } from "@/lib/supabase/server";
+import { getSupabaseShow } from "@/lib/supabase/shows";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,9 @@ export default async function ShowPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const show = getShow(Number(id));
+  const showId = Number(id);
+  if (!Number.isSafeInteger(showId) || showId < 1) notFound();
+  const show = await getSupabaseShow(showId);
   if (!show || !show.onSale) notFound();
   const totalPay = show.ticketPriceCents + show.depositCents;
   const supabase = await createSupabaseServerClient();

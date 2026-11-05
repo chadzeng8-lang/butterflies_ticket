@@ -1,11 +1,28 @@
 "use server";
 
-import { getTicketsForOrder, lookupOrdersByContact } from "@/lib/db";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { centsToCny } from "@/lib/money";
 import { toDataUrl } from "@/lib/qr";
 import { signTicketCode } from "@/lib/ticket-token";
-import { ORDER_STATUS_LABEL } from "@/lib/types";
+import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/types";
 import { listSupabaseOrdersForCurrentUser } from "@/lib/supabase/orders";
+
+type GuestTicketLookupRow = {
+  id: number;
+  code: string;
+  status: OrderStatus;
+  show_title: string;
+  show_starts_at: string;
+  show_venue: string;
+  quantity: number;
+  ticket_total_cents: number;
+  deposit_total_cents: number;
+  tickets: Array<{
+    code: string;
+    checked_in_at: string | null;
+    deposit_refunded_at: string | null;
+  }>;
+};
 
 export type TicketLookupState = {
   error?: string;
@@ -71,38 +88,46 @@ export async function lookupTicketsAction(
     };
   }
 
-  const orders = lookupOrdersByContact(buyerName, contact);
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("lookup_ticket_orders", {
+    p_buyer_name: buyerName,
+    p_contact: contact,
+  });
+  if (error) {
+    if (error.code === "PGRST202") {
+      return { error: "线上找票功能尚未启用，请先完成 Supabase 数据库迁移。" };
+    }
+    throw new Error("SUPABASE_TICKET_LOOKUP_FAILED");
+  }
+
+  const orders = (data || []) as GuestTicketLookupRow[];
   if (orders.length === 0) {
     return { error: "未找到符合資料的訂單，請確認姓名及完整手機號碼或電郵地址。" };
   }
 
   return {
     orders: await Promise.all(
-      orders.map(async (order) => {
-        const tickets = await Promise.all(
-          getTicketsForOrder(order.id).map(async (ticket) => ({
+      orders.map(async (order) => ({
+        id: order.id,
+        code: order.code,
+        status: ORDER_STATUS_LABEL[order.status],
+        showTitle: order.show_title,
+        showStartsAt: order.show_starts_at,
+        showVenue: order.show_venue,
+        quantity: order.quantity,
+        total: centsToCny(order.ticket_total_cents + order.deposit_total_cents),
+        tickets: await Promise.all(
+          order.tickets.map(async (ticket) => ({
             code: ticket.code,
-            status: ticket.depositRefundedAt
+            status: ticket.deposit_refunded_at
               ? "按金已退"
-              : ticket.checkedInAt
-                ? "已核銷"
-                : "待核銷",
+              : ticket.checked_in_at
+                ? "已核销"
+                : "待核销",
             dataUrl: await toDataUrl(signTicketCode(ticket.code)),
           }))
-        );
-
-        return {
-          id: order.id,
-          code: order.code,
-          status: ORDER_STATUS_LABEL[order.status],
-          showTitle: order.showTitle,
-          showStartsAt: order.showStartsAt,
-          showVenue: order.showVenue,
-          quantity: order.quantity,
-          total: centsToCny(order.ticketTotalCents + order.depositTotalCents),
-          tickets,
-        };
-      })
+        ),
+      }))
     ),
   };
 }

@@ -2,11 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkPaidForm } from "@/components/MarkPaidForm";
 import { SiteHeader } from "@/components/SiteHeader";
-import {
-  getOrderWithShow,
-  getShow,
-  getTicketsForOrder,
-} from "@/lib/db";
 import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
@@ -26,18 +21,15 @@ export default async function OrderPage({
   const { code } = await params;
   const sp = await searchParams;
   const supabaseRecord = await getSupabaseOrderWithShow(decodeURIComponent(code));
-  const order = supabaseRecord?.order ?? getOrderWithShow(decodeURIComponent(code));
-  if (!order) notFound();
-  const show = supabaseRecord?.show ?? getShow(order.showId);
-  if (!show) notFound();
+  if (!supabaseRecord) notFound();
+  const { order, show } = supabaseRecord;
 
   const total = order.ticketTotalCents + order.depositTotalCents;
-  const tickets =
-    order.status === "issued" ||
+  const tickets = order.status === "issued" ||
     order.status === "checked_in" ||
     order.status === "deposit_refunded"
-      ? supabaseRecord?.tickets ?? getTicketsForOrder(order.id)
-      : [];
+    ? supabaseRecord.tickets
+    : [];
 
   const ticketQrs = await Promise.all(
     tickets.map(async (t) => ({
@@ -146,13 +138,7 @@ export default async function OrderPage({
               )}
             </div>
             <div style={{ marginTop: "1.1rem" }}>
-              {supabaseRecord ? (
-                <MarkPaidForm code={order.code} />
-              ) : (
-                <p className="muted">
-                  此为旧系统历史订单，请联系工作人员处理付款；历史订单不会自动迁移至在线账户。
-                </p>
-              )}
+              <MarkPaidForm code={order.code} />
             </div>
           </article>
         )}

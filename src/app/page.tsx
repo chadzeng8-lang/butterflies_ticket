@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
-import { listShows } from "@/lib/db";
+import { listSupabaseShows } from "@/lib/supabase/shows";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { audiencePricingSummary } from "@/lib/pricing-copy";
@@ -33,19 +33,72 @@ const cast = [
 
 const crew = [
   ["導演", "曾城"],
-  ["助導", "郭宣辰、鄧清揚"],
+  ["助導", "郭宣辰、鄧清揚、蒋思遥"],
   ["舞監", "柏雨辰"],
   ["舞蹈指導", "陳念秋"],
   ["舞美道具", "曾城、曾懿欣、柏雨辰"],
   ["舞美妝造", "王楷源、程澤宜、張佳彤、徐喆"],
   ["燈光", "王嘉琪、曾城、施涵中"],
   ["音效", "劉睿元、王之行、程澤宜、陳念秋、徐喆"],
-  ["攝影", "張佳彤、王一伊、胡可萱"],
-  ["字幕", "曾奕馨"],
+  ["攝影", "張佳彤、王一伊、胡可萱、彭琪淇"],
+  ["字幕", "曾奕馨、邱心语"],
 ];
 
-export default function HomePage() {
-  const shows = listShows(false);
+const productionTimeline = [
+  {
+    date: "2026.04.18–20",
+    title: "演员面试",
+    description: "确定主要卡司，完成演员团队构建。",
+  },
+  {
+    date: "2026.05.02",
+    title: "演员破冰",
+    description: "相互熟悉，建立团队默契。",
+  },
+  {
+    date: "2026.06.08",
+    title: "开始声乐学习与剧本研读",
+    description: "为唱段打底，创作角色小传。",
+  },
+  {
+    date: "2026.07.12",
+    title: "参加《湾区长歌·时光织梦》大湾区高校音乐剧展演",
+    description: "选段首秀，首次面对观众。",
+  },
+  {
+    date: "2026.08.03",
+    title: "参加香港中文大学荧星晚会",
+    description: "演出《千分之一》，宣传中国音乐剧。",
+  },
+  {
+    date: "2026.09.06",
+    title: "第一次排练",
+    description: "从场面调度与熟悉声乐开始。",
+  },
+  {
+    date: "2026.09中旬",
+    title: "幕后招募",
+    description: "构建完整制作与技术团队。",
+  },
+  {
+    date: "2026.09–10",
+    title: "剧目集中排练",
+    description: "打磨表演、声乐、舞蹈与舞台调度。",
+  },
+  {
+    date: "2026.10.17",
+    title: "《蝶》精简版首演",
+    description: "深圳安托山公共文化中心向日葵厅。",
+  },
+  {
+    date: "2026.11.21–22",
+    title: "《蝶》沉浸式版",
+    description: "香港中文大学（深圳）时光胶囊黑匣子。",
+  },
+];
+
+export default async function HomePage() {
+  const shows = await listSupabaseShows(false);
   const firstOpen = shows[0];
   const featuredShow = shows[0];
 
@@ -179,7 +232,7 @@ export default function HomePage() {
             <p className="eyebrow">On Stage / 04</p>
             <h2>來自世界盡頭的相遇</h2>
           </div>
-          <p>一段愛與掙扎的旅程，即將再次上演。</p>
+          <p>從初次相遇到沉浸式舞台，記錄《蝶》一路走來的每一步。</p>
         </div>
         <div className="photo-gallery">
           <figure className="gallery-photo">
@@ -193,9 +246,20 @@ export default function HomePage() {
           </figure>
         </div>
         <div className="gallery-premiere">
-          <span>2026.10.17 · 深圳安托山公共文化中心</span>
+          <span>2026.10.17 · 深圳安托山公共文化中心向日葵厅</span>
           <p>《蝶》精簡版於此首演。11 月 21 日至 22 日，與更多觀眾再次相見。</p>
         </div>
+        <ol className="production-timeline">
+          {productionTimeline.map((item) => (
+            <li className="timeline-item" key={`${item.date}-${item.title}`}>
+              <time>{item.date}</time>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="credits-section" id="credits">
@@ -276,6 +340,9 @@ export default function HomePage() {
       <section className="closing-cta">
         <p className="eyebrow">CU Musical · 2026</p>
         <h2>一場婚禮，一個族群的命運。<br />等你走進《蝶》的世界。</h2>
+        <Link className="ticket-lookup-link" href="/personality">
+          测测你是《蝶》里的哪个人 <span aria-hidden>→</span>
+        </Link>
         {firstOpen ? (
           <Link className="btn" href={`/shows/${firstOpen.id}`}>選擇場次並登記 <span aria-hidden>→</span></Link>
         ) : (

@@ -3,7 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/admin") && pathname !== "/admin/online-orders") {
+  if (
+    pathname.startsWith("/admin") &&
+    pathname !== "/admin/online-orders" &&
+    pathname !== "/admin/online-checkin"
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/online-orders";
     url.search = "";

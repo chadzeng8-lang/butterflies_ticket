@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
   closeSupabaseOrderAction,
   confirmSupabaseOrderAction,
@@ -89,12 +90,34 @@ export default async function OnlineOrdersPage({
       <section className="hero">
         <h1>Supabase 在线订单</h1>
         <p>使用已提升为管理员的电邮账号审核新订单。确认后会创建电子票。</p>
+        <Link className="btn secondary" href="/admin/online-checkin">
+          前往现场核销
+        </Link>
       </section>
       {params.error && (
         <div className="error" role="alert">
-          {params.error === "email"
-            ? "订单已出票或邮件发送失败；请检查邮件配置后重试发送。"
-            : "操作失败，订单状态可能已变更；请刷新后重新核对。"}
+          {params.error === "EMAIL_CONFIG_MISSING"
+            ? "缺少 Resend 配置。请在运行网站的环境中设置 RESEND_API_KEY、EMAIL_FROM 和 NEXT_PUBLIC_SITE_URL，并重启网站。"
+            : params.error === "EMAIL_API_KEY_INVALID"
+              ? "Resend API Key 无效或已撤销，请检查运行环境中的 RESEND_API_KEY。"
+              : params.error === "EMAIL_SENDER_UNVERIFIED"
+                ? "Resend 拒绝了发件地址。请验证发件域名，并使用该域名下的 EMAIL_FROM 地址。"
+                : params.error === "EMAIL_RECIPIENT_RESTRICTED"
+                  ? "Resend 测试模式限制了收件地址。请确认收件地址已获授权，或验证自己的发件域名。"
+                  : params.error === "EMAIL_RATE_LIMITED"
+                    ? "Resend 发送频率受限，请稍后重试。"
+                    : params.error === "EMAIL_PROVIDER_UNAVAILABLE" ||
+                        params.error === "EMAIL_NETWORK_ERROR"
+                      ? "暂时无法连接 Resend，请检查网络后重试。"
+                      : params.error === "EMAIL_PROVIDER_REJECTED"
+                        ? "Resend 拒绝了邮件请求，请检查 Resend 的发件人与收件人设置。"
+                        : params.error === "email_recipient_missing"
+                          ? "订单没有可用的账号电邮地址，无法发送出票通知。"
+                          : params.error === "email_tracking"
+                            ? "邮件可能已发送，但写入发送记录失败。请先检查收件箱，再决定是否重发。"
+                            : params.error.startsWith("email_")
+                              ? "查询订单或发送记录失败，请刷新页面后重试。"
+                              : "操作失败，订单状态可能已变更；请刷新后重新核对。"}
         </div>
       )}
       {params.done && (

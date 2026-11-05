@@ -869,6 +869,43 @@ textarea {
   line-height: 1.7;
 }
 
+.production-timeline {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(1.25rem, 4vw, 3.5rem);
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.62fr) minmax(0, 1.38fr);
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.timeline-item time {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.timeline-item h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.timeline-item p {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
 .photo-gallery {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1035,6 +1072,183 @@ textarea {
   letter-spacing: -0.03em;
 }
 
+.account-heading,
+.personality-progress-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.account-heading h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.account-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.personality-quiz,
+.personality-result {
+  display: grid;
+  gap: 1rem;
+}
+
+.personality-quiz > .panel,
+.personality-result {
+  padding: clamp(1.25rem, 4vw, 2rem);
+}
+
+.personality-intro-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1.25rem 0 1.5rem;
+  padding-left: 1.2rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.personality-intro-list li::marker {
+  color: var(--warn);
+}
+
+.personality-progress-heading {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.personality-progress {
+  height: 3px;
+  overflow: hidden;
+  background: var(--bg-soft);
+}
+
+.personality-progress span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transition: width 0.25s ease;
+}
+
+.personality-question {
+  min-height: 5.2rem;
+  margin: 0;
+  padding: 0.4rem 0 1rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+.personality-options {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.personality-option {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.personality-option > :first-child {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.personality-option:hover,
+.personality-option.selected {
+  border-color: var(--line-strong);
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.personality-option:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.personality-result-label {
+  margin: 0;
+  color: var(--muted);
+}
+
+.personality-result > h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+}
+
+.personality-one-liner {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.personality-tested-at {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.personality-copy {
+  display: grid;
+  gap: 1.3rem;
+  margin: 0.5rem 0;
+}
+
+.personality-copy section {
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.personality-copy h3,
+.personality-copy h4 {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+}
+
+.personality-copy h4 {
+  margin-top: 1rem;
+  font-size: 0.98rem;
+}
+
+.personality-copy p,
+.personality-copy li {
+  color: var(--muted);
+  line-height: 1.85;
+}
+
+.personality-copy p {
+  margin: 0;
+}
+
+.personality-copy ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -1086,6 +1300,14 @@ textarea {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .account-heading {
+    align-items: flex-start;
+  }
+
+  .personality-question {
+    min-height: 0;
   }
 
   .hero-stage {
@@ -1163,6 +1385,16 @@ textarea {
   .gallery-premiere {
     grid-template-columns: 1fr;
     gap: 0.4rem;
+  }
+
+  .production-timeline {
+    grid-template-columns: 1fr;
+    margin-top: 1.5rem;
+  }
+
+  .timeline-item {
+    grid-template-columns: minmax(105px, 0.55fr) minmax(0, 1.45fr);
+    gap: 0.75rem;
   }
 
   .photo-gallery {

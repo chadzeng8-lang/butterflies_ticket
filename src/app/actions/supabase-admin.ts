@@ -57,11 +57,14 @@ async function deliverTicketEmail(
     .select("buyer_name, contact_extra, status")
     .eq("code", code)
     .maybeSingle();
-  if (orderError || !order) redirect("/admin/online-orders?error=email");
+  if (orderError) redirect("/admin/online-orders?error=email_order_lookup");
+  if (!order) redirect("/admin/online-orders?error=email_order_missing");
   if (!["issued", "checked_in", "deposit_refunded"].includes(order.status)) {
-    redirect("/admin/online-orders?error=email");
+    redirect("/admin/online-orders?error=email_order_status");
   }
-  if (!order.contact_extra) redirect("/admin/online-orders?error=email");
+  if (!order.contact_extra) {
+    redirect("/admin/online-orders?error=email_recipient_missing");
+  }
 
   try {
     await sendTicketIssuedEmail({
@@ -69,14 +72,18 @@ async function deliverTicketEmail(
       buyerName: order.buyer_name,
       orderCode: code,
     });
-  } catch {
-    redirect("/admin/online-orders?error=email");
+  } catch (error) {
+    const code =
+      error instanceof Error && error.message.startsWith("EMAIL_")
+        ? error.message
+        : "EMAIL_PROVIDER_REJECTED";
+    redirect(`/admin/online-orders?error=${encodeURIComponent(code)}`);
   }
 
   const { error: markError } = await supabase.rpc("mark_ticket_email_sent", {
     p_order_code: code,
   });
-  if (markError) redirect("/admin/online-orders?error=email");
+  if (markError) redirect("/admin/online-orders?error=email_tracking");
 }
 
 export async function closeSupabaseOrderAction(formData: FormData) {
