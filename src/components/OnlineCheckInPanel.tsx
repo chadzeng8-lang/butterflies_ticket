@@ -6,6 +6,7 @@ import {
   previewOnlineCheckInAction,
   type OnlineCheckInState,
 } from "@/app/actions/supabase-checkin";
+import { BusyButton } from "@/components/BusyButton";
 import { centsToCny } from "@/lib/money";
 
 const initialState: OnlineCheckInState = {};
@@ -95,13 +96,14 @@ export function OnlineCheckInPanel() {
             />
           </label>
           <div className="row">
-            <button className="btn" type="submit" disabled={previewPending || !token}>
-              {previewPending ? "查询中…" : "查询票面"}
-            </button>
+            <BusyButton pending={previewPending} pendingLabel="查询中…" disabled={!token}>
+              查询票面
+            </BusyButton>
             <button
               className="btn secondary"
               type="button"
               onClick={scanning ? stopScan : startScan}
+              disabled={previewPending}
             >
               {scanning ? "关闭摄像头" : "打开摄像头扫码"}
             </button>
@@ -133,11 +135,12 @@ export function OnlineCheckInPanel() {
           <p className="muted" style={{ marginTop: "0.8rem" }}>
             请先在现场完成签到和按金退还，再确认登记。系统不会自动转账退款，并会记录当前管理员账号。
           </p>
-          <form action={confirmAction} className="form">
+          <form action={confirmAction} className="form" aria-busy={confirmPending}>
             <input type="hidden" name="token" value={preview.token} />
-            <button className="btn" type="submit" disabled={confirmPending}>
-              {confirmPending ? "处理中…" : "确认已核销并退还按金"}
-            </button>
+            <BusyButton pending={confirmPending} pendingLabel="处理中…">
+              确认已核销并退还按金
+            </BusyButton>
+            {confirmPending && <p className="form-busy-hint">正在登记核销，请稍候。</p>}
           </form>
           {confirmState.error && <p className="error" role="alert">{confirmState.error}</p>}
         </article>

@@ -2,10 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import {
   createSupabaseServerClient,
   getSupabaseUser,
 } from "@/lib/supabase/server";
+import { isTicketSaleOpen, ticketSaleClosedMessage } from "@/lib/ticket-sale";
 
 export type ActionState = { error?: string };
 
@@ -35,6 +37,11 @@ export async function createOrderAction(
 
     if (!Number.isInteger(showId) || showId < 1 || !buyerName.trim() || !phone.trim()) {
       return { error: "请填写姓名与手机号。" };
+    }
+
+    const isAdmin = await isCurrentUserTicketingAdmin(supabase);
+    if (!isTicketSaleOpen() && !isAdmin) {
+      return { error: ticketSaleClosedMessage() };
     }
 
     const { data, error } = await supabase.rpc("create_ticket_order", {

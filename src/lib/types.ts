@@ -14,6 +14,8 @@ export type Show = {
   venue: string;
   startsAt: string;
   capacity: number;
+  /** 内部预留座位数，不对外开放购买 */
+  internalReserved: number;
   ticketPriceCents: number;
   depositCents: number;
   onSale: number;

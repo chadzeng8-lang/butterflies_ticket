@@ -87,7 +87,7 @@ export default async function AccountPage({
             </form>
           </div>
           <div className="row" style={{ marginTop: "1rem" }}>
-            <Link className="btn" href="/">选择场次</Link>
+            <Link className="btn" href="/shows">选择场次</Link>
             <Link className="btn secondary" href="/personality">
               {personalityResult ? "重新测试人格" : "开始人格测试"}
             </Link>

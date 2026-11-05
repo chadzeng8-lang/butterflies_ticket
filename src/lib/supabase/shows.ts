@@ -8,6 +8,7 @@ export type SupabaseShowRow = {
   venue: string;
   starts_at: string;
   capacity: number;
+  internal_reserved?: number | null;
   ticket_price_cents: number;
   deposit_cents: number;
   on_sale: boolean;
@@ -27,6 +28,7 @@ export function mapSupabaseShow(row: SupabaseShowRow): Show {
     venue: row.venue,
     startsAt: row.starts_at,
     capacity: row.capacity,
+    internalReserved: row.internal_reserved ?? 0,
     ticketPriceCents: row.ticket_price_cents,
     depositCents: row.deposit_cents,
     onSale: row.on_sale ? 1 : 0,

@@ -49,7 +49,7 @@ export function CreateShowForm() {
         付款说明
         <textarea
           name="paymentNote"
-          defaultValue="公益演出仅收按金 ¥50/人，到场全额退还。可用微信 / 支付宝转账，备注订单号。"
+          defaultValue="公益演出仅收按金 ¥50 或 HK$60/人，到场全额退还。可用微信 / 支付宝转账，备注订单号。"
           placeholder="例如：FPS 识别码 / 微信名"
         />
       </label>

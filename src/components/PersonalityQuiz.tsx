@@ -194,7 +194,17 @@ export function PersonalityQuiz({ isAuthenticated }: { isAuthenticated: boolean 
               上一题
             </button>
           )}
-          {isPending && <p className="muted" role="status">正在计算并保存结果…</p>}
+          {isPending && (
+            <>
+              <button className="btn is-pending" type="button" disabled style={{ marginTop: "1rem" }}>
+                <span className="btn-spinner" aria-hidden />
+                <span>保存中…</span>
+              </button>
+              <p className="form-busy-hint" role="status">
+                正在计算并保存结果，请稍候。
+              </p>
+            </>
+          )}
           {current === questions.length - 1 &&
             answers[current] !== null &&
             !isPending && (

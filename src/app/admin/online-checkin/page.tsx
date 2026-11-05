@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { OnlineCheckInPanel } from "@/components/OnlineCheckInPanel";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -24,6 +25,14 @@ export default async function OnlineCheckInPage() {
       <section className="hero">
         <h1>现场核销</h1>
         <p>扫描 Supabase 订单电子票，核对观众信息；现场完成签到与按金退还后，再登记核销。</p>
+        <div className="row" style={{ gap: "0.75rem", flexWrap: "wrap" }}>
+          <Link className="btn secondary" href="/admin/online-orders">
+            订单审核
+          </Link>
+          <Link className="btn secondary" href="/admin/online-inventory">
+            场次库存
+          </Link>
+        </div>
       </section>
       <OnlineCheckInPanel />
     </main>

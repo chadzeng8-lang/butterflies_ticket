@@ -13,7 +13,7 @@
 
 ## 当前状态与接手事项
 
-- 首页主视觉和页尾的登记按钮都跳到 `#shows`（Part 1「选择场次」），不是直接跳到某一场的登记页。
+- 首页以故事 / 关于 / 剧照时间线 / 演职为主（编号 01–04）；购票相关（报名步骤、地图、场次列表、观演须知）在 `/shows`。首页 CTA 与导航「购票」都指向 `/shows`。
 - 左上角品牌文字由 `src/lib/site.ts` 的 `SITE_NAME` 控制，不再读取 Netlify 自动生成的站点名。
 - 用户要求延续参考 Strand 的简洁视觉、减少大圆角；全站支持简繁切换。
 - Resend 组织 team 已完成 `cumusical.xyz` 域名验证，DKIM/SPF 状态曾确认通过。阿里云 DNS 的 Resend 验证 TXT 已添加，`resend._domainkey` TXT 已替换为组织 team 的 DKIM 值；不要恢复个人 team 的旧 DKIM 值或删除验证记录。
@@ -23,7 +23,8 @@
 演出主要信息（修改之前先与用户确认是否有更新）：
 
 - 演出：音乐剧《蝶》学生版，2026-11-21 至 2026-11-22，香港中文大学（深圳）时光胶囊黑匣子，普通话，约 150 分钟。
-- 公益免费入场，每张票需缴 ¥50 按金，到场观演后全额退还。
+- 公益免费入场，每张票需缴 ¥50 或 HK$60 按金，到场观演后全额退还。
+- 开票时间：2026-11-10 20:00（香港时间），由 `src/lib/ticket-sale.ts` 控制；普通用户未到点不可登记。管理员登录后可无视开票时间直接在 `/shows` 报名。
 - 人格测试共 24 题。
 
 ## 本地开始
@@ -69,6 +70,7 @@ git status --short
 - 票夹与找票：`src/app/tickets/page.tsx`、`src/components/TicketLookupForm.tsx`
 - 人格测试：`src/app/personality/page.tsx`、`src/components/PersonalityQuiz.tsx`、`src/lib/personality-data.json`
 - 在线干事订单审核：`src/app/admin/online-orders/page.tsx`、`src/app/actions/supabase-admin.ts`
+- 场次库存（总票数 / 剩余）：`src/app/admin/online-inventory/page.tsx`；订单管理页顶部也有汇总
 - 线上现场核销：`src/app/admin/online-checkin/page.tsx`、`src/app/actions/supabase-checkin.ts`
 - Supabase 服务端客户端与数据访问：`src/lib/supabase/`
 
@@ -86,7 +88,8 @@ git status --short
 
 - 线上订单、电子票、账号、人格结果及线上核销依赖 Supabase。
 - Supabase 管理员通过 `profiles.role = 'admin'` 授权；不要将本地旧密码后台和 Supabase 管理员流程混为一谈。
-- 线上订单入口是 `/admin/online-orders`，线上核销入口是 `/admin/online-checkin`。
+- 线上订单入口是 `/admin/online-orders`，库存入口是 `/admin/online-inventory`，线上核销入口是 `/admin/online-checkin`。
+- 余票 = `capacity - 有效订单票数`。总票数在管理页直接改 `shows.capacity`，不再使用内部预留。订单随时编辑若需 RPC，见 `20261105173000_admin_inventory_and_order_edit.sql`（可选）。
 - 上传付款凭证使用 Supabase 私有 `payment-proofs` bucket；不要改为依赖 Netlify 本地文件。
 - `README.md`、`OPS.md` 含有较早的本地 JSON/部署说明，部分部署和管理流程可能过时。以当前实现、Netlify Git 集成和本指南的架构边界为准；若发现文档冲突，应顺手更新相关说明。
 
@@ -99,6 +102,8 @@ git status --short
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_AMAP_KEY`（首页演出地点地图；控制台需配置域名白名单）
+- `NEXT_PUBLIC_AMAP_SECURITY_CODE`（高德安全密钥，若控制台已启用则必填）
 - `TICKET_SECRET`
 - `RESEND_API_KEY`
 - `EMAIL_FROM`

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import { NavigationBusyBinder } from "@/components/NavigationProgress";
 import { SITE_NAME } from "@/lib/site";
 import "./globals.css";
 
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" data-locale="cn">
       <body>
+        <NavigationBusyBinder />
         <LocaleProvider>{children}</LocaleProvider>
       </body>
     </html>

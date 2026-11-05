@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkPaidForm } from "@/components/MarkPaidForm";
+import { PaymentMethods } from "@/components/PaymentMethods";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
+import { depositAmounts } from "@/lib/payment-methods";
+import { depositPerPersonLabel } from "@/lib/pricing-copy";
 import { toDataUrl } from "@/lib/qr";
 import { signTicketCode } from "@/lib/ticket-token";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
@@ -25,6 +28,7 @@ export default async function OrderPage({
   const { order, show } = supabaseRecord;
 
   const total = order.ticketTotalCents + order.depositTotalCents;
+  const depositBoth = depositAmounts(order.quantity);
   const tickets = order.status === "issued" ||
     order.status === "checked_in" ||
     order.status === "deposit_refunded"
@@ -60,11 +64,15 @@ export default async function OrderPage({
             <h2>订单状态</h2>
             <span
               className={`badge ${
-                order.status === "pending_confirm"
+                order.status === "pending_confirm" || order.status === "pending_payment"
                   ? "warn"
-                  : order.status === "expired" || order.status === "cancelled"
-                    ? "danger"
-                    : ""
+                  : order.status === "issued" ||
+                      order.status === "checked_in" ||
+                      order.status === "deposit_refunded"
+                    ? "success"
+                    : order.status === "expired" || order.status === "cancelled"
+                      ? "danger"
+                      : ""
               }`}
             >
               {ORDER_STATUS_LABEL[order.status]}
@@ -76,11 +84,18 @@ export default async function OrderPage({
             </span>
             <span>
               {order.ticketTotalCents === 0
-                ? `公益免费 · 按金 `
+                ? "公益免费 · 按金 "
                 : `票款 ${centsToCny(order.ticketTotalCents)} + 按金 `}
-              {centsToCny(order.depositTotalCents)}
-              {order.ticketTotalCents === 0 ? "（到场全退）" : ""} ={" "}
-              <span className="price">{centsToCny(total)}</span>
+              <span className="price">
+                ¥{depositBoth.rmb} / HK${depositBoth.hkd}
+              </span>
+              {order.ticketTotalCents === 0 ? "（到场全退）" : ""}
+              {order.ticketTotalCents > 0 ? (
+                <>
+                  {" "}
+                  · 合计参考 {centsToCny(total)}
+                </>
+              ) : null}
             </span>
             {order.status === "pending_payment" && (
               <span>请于 {formatShowTime(order.expiresAt)} 前完成付款并点「我已付款」</span>
@@ -102,41 +117,12 @@ export default async function OrderPage({
         {order.status === "pending_payment" && (
           <article className="panel">
             <h2>转账付款</h2>
-            <div className="notice">
-              <strong>转账备注必须填写</strong>
-              <div className="order-code">{order.code}</div>
-              <span>金额 {centsToCny(total)}。备注填错可能导致无法对账出票。</span>
-            </div>
             {show.paymentNote && (
-              <p className="muted" style={{ marginTop: "0.8rem" }}>
+              <p className="muted" style={{ marginBottom: "0.9rem" }}>
                 {show.paymentNote}
               </p>
             )}
-            <div className="qr-grid" style={{ marginTop: "1rem" }}>
-              {show.wechatQrPath && (
-                <div className="qr-box">
-                  <img src={`/api/uploads/${show.wechatQrPath}`} alt="微信收款码" />
-                  <div>微信</div>
-                </div>
-              )}
-              {show.alipayQrPath && (
-                <div className="qr-box">
-                  <img src={`/api/uploads/${show.alipayQrPath}`} alt="支付宝收款码" />
-                  <div>支付宝</div>
-                </div>
-              )}
-              {show.fpsQrPath && (
-                <div className="qr-box">
-                  <img src={`/api/uploads/${show.fpsQrPath}`} alt="FPS 收款码" />
-                  <div>FPS / PayMe</div>
-                </div>
-              )}
-              {!show.wechatQrPath && !show.alipayQrPath && !show.fpsQrPath && (
-                <p className="muted">
-                  收款码尚未上传。请按干事公布的收款方式转账，并备注订单号。
-                </p>
-              )}
-            </div>
+            <PaymentMethods quantity={order.quantity} orderCode={order.code} />
             <div style={{ marginTop: "1.1rem" }}>
               <MarkPaidForm code={order.code} />
             </div>
@@ -155,7 +141,9 @@ export default async function OrderPage({
         {ticketQrs.length > 0 && (
           <article className="panel">
             <h2>电子票</h2>
-            <p className="muted">入场出示二维码。现场核销后，工作人员将全额退还每人按金 {centsToCny(show.depositCents)}。</p>
+            <p className="muted">
+              入场出示二维码。现场核销后，工作人员将全额退还每人按金 {depositPerPersonLabel()}。
+            </p>
             <div className="grid" style={{ marginTop: "1rem" }}>
               {ticketQrs.map((t, idx) => (
                 <div key={t.code} className="ticket card" style={{ boxShadow: "none" }}>
@@ -172,7 +160,7 @@ export default async function OrderPage({
                     {t.depositRefundedAt ? (
                       <span>按金已退</span>
                     ) : (
-                      <span>按金待退 {centsToCny(show.depositCents)}</span>
+                      <span>按金待退 {depositPerPersonLabel()}</span>
                     )}
                   </div>
                 </div>
@@ -182,7 +170,9 @@ export default async function OrderPage({
         )}
 
         <p>
-          <Link href="/tickets">去票夹查询</Link> · <Link href="/">返回首页</Link>
+          <Link href="/tickets">去票夹查询</Link> ·{" "}
+          <Link href="/campus-entry">入校预约指南</Link> ·{" "}
+          <Link href="/">返回首页</Link>
         </p>
       </div>
     </main>

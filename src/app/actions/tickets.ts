@@ -29,6 +29,7 @@ export type TicketLookupState = {
   orders?: Array<{
     id: number;
     code: string;
+    statusKey: OrderStatus;
     status: string;
     showTitle: string;
     showStartsAt: string;
@@ -66,6 +67,7 @@ export async function lookupTicketsAction(
         accountOrders.map(async ({ order, tickets }) => ({
           id: order.id,
           code: order.code,
+          statusKey: order.status,
           status: ORDER_STATUS_LABEL[order.status],
           showTitle: order.showTitle,
           showStartsAt: order.showStartsAt,
@@ -110,6 +112,7 @@ export async function lookupTicketsAction(
       orders.map(async (order) => ({
         id: order.id,
         code: order.code,
+        statusKey: order.status,
         status: ORDER_STATUS_LABEL[order.status],
         showTitle: order.show_title,
         showStartsAt: order.show_starts_at,

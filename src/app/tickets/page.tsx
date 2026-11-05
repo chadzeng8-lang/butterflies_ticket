@@ -23,6 +23,7 @@ export default async function TicketsPage() {
       records.map(async ({ order, tickets }) => ({
         id: order.id,
         code: order.code,
+        statusKey: order.status,
         status: ORDER_STATUS_LABEL[order.status],
         showTitle: order.showTitle,
         showStartsAt: order.showStartsAt,

@@ -141,6 +141,7 @@ export function createShow(input: {
       venue: input.venue,
       startsAt: input.startsAt,
       capacity: input.capacity,
+      internalReserved: 0,
       ticketPriceCents: input.ticketPriceCents,
       depositCents: input.depositCents,
       onSale: input.onSale ? 1 : 0,
@@ -164,6 +165,7 @@ export function updateShow(
     venue: string;
     startsAt: string;
     capacity: number;
+    internalReserved: number;
     ticketPriceCents: number;
     depositCents: number;
     onSale: boolean;
@@ -182,6 +184,11 @@ export function updateShow(
     current.venue = input.venue ?? current.venue;
     current.startsAt = input.startsAt ?? current.startsAt;
     current.capacity = input.capacity ?? current.capacity;
+    if (input.internalReserved !== undefined) {
+      current.internalReserved = input.internalReserved;
+    } else if (current.internalReserved === undefined) {
+      current.internalReserved = 0;
+    }
     current.ticketPriceCents = input.ticketPriceCents ?? current.ticketPriceCents;
     current.depositCents = input.depositCents ?? current.depositCents;
     current.onSale =
@@ -516,10 +523,10 @@ export function getCheckInPreview(ticketCode: string) {
 }
 
 const BUTTERFLY_DESCRIPTION =
-  "香港中文大学音乐剧社年度大戏《蝶》沉浸版展演（公益演出）。不收票价，仅收按金 ¥50；到场核销后全额退还，未到场不退。转账请务必备注订单号。";
+  "香港中文大学音乐剧社年度大戏《蝶》沉浸版展演（公益演出）。不收票价，仅收按金 ¥50 或 HK$60；到场核销后全额退还，未到场不退。转账请务必备注订单号。";
 
 const BUTTERFLY_PAYMENT_NOTE =
-  "公益演出仅收按金 ¥50/人，到场全额退还。可用微信 / 支付宝转账，备注填写订单号（如 MT-A7K2）。";
+  "公益演出仅收按金 ¥50 或 HK$60/人，到场全额退还。可用微信 / 支付宝转账，备注填写订单号（如 MT-A7K2）。";
 
 const BUTTERFLY_VENUE = "香港中文大学（深圳）时光胶囊黑匣子";
 
