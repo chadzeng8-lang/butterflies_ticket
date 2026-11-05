@@ -779,11 +779,23 @@ textarea {
 }
 
 .story-section {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
   gap: clamp(2rem, 7vw, 7rem);
   padding: clamp(3.5rem, 8vw, 7rem) 0;
   border-bottom: 1px solid var(--line);
+}
+
+.story-section::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: url("/images/story-butterflies.png") center / contain no-repeat;
+  content: "";
+  opacity: 0.25;
+  pointer-events: none;
 }
 
 .story-heading .eyebrow,
@@ -1090,6 +1102,22 @@ textarea {
   gap: 1rem;
 }
 
+.account-shortcut {
+  display: grid;
+  gap: 0.45rem;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.account-shortcut:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+
+.account-shortcut > :last-child {
+  margin-top: 0.3rem;
+  color: var(--ink);
+}
+
 .personality-quiz,
 .personality-result {
   display: grid;
@@ -1112,6 +1140,10 @@ textarea {
 
 .personality-intro-list li::marker {
   color: var(--warn);
+}
+
+.personality-hero .eyebrow {
+  margin-bottom: 0.8rem;
 }
 
 .personality-progress-heading {
@@ -1330,8 +1362,7 @@ textarea {
   }
 
   .event-hero,
-  .story-section,
-  .about-section {
+  .story-section {
     grid-template-columns: 1fr;
   }
 

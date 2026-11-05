@@ -2,11 +2,6 @@ import Link from "next/link";
 import { AccountForm } from "@/components/AccountForm";
 import { SiteHeader } from "@/components/SiteHeader";
 import { signOutAction } from "@/app/actions/account";
-import { TicketOrderList, type TicketOrderView } from "@/components/TicketOrderList";
-import { PersonalityResultView } from "@/components/PersonalityResultView";
-import { centsToCny } from "@/lib/money";
-import { toDataUrl } from "@/lib/qr";
-import { signTicketCode } from "@/lib/ticket-token";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 import {
   createSupabaseServerClient,
@@ -33,7 +28,12 @@ export default async function AccountPage({
   const supabase = await createSupabaseServerClient();
   const user = await getSupabaseUser(supabase);
   let isAdmin = false;
-  let orders: TicketOrderView[] = [];
+  let orderCount = 0;
+  let ticketCount = 0;
+  let latestOrder: {
+    code: string;
+    status: string;
+  } | null = null;
   let personalityResult = null;
   let personalityMigrationRequired = false;
   if (user) {
@@ -45,29 +45,14 @@ export default async function AccountPage({
     if (profileError) throw new Error("PROFILE_LOOKUP_FAILED");
     isAdmin = profile?.role === "admin";
     const records = await listSupabaseOrdersForCurrentUser();
-    orders = await Promise.all(
-      records.map(async ({ order, tickets }) => ({
-        id: order.id,
-        code: order.code,
-        status: ORDER_STATUS_LABEL[order.status],
-        showTitle: order.showTitle,
-        showStartsAt: order.showStartsAt,
-        showVenue: order.showVenue,
-        quantity: order.quantity,
-        total: centsToCny(order.ticketTotalCents + order.depositTotalCents),
-        tickets: await Promise.all(
-          tickets.map(async (ticket) => ({
-            code: ticket.code,
-            status: ticket.depositRefundedAt
-              ? "按金已退"
-              : ticket.checkedInAt
-                ? "已核销"
-                : "待核销",
-            dataUrl: await toDataUrl(signTicketCode(ticket.code)),
-          }))
-        ),
-      }))
-    );
+    orderCount = records.length;
+    ticketCount = records.reduce((total, record) => total + record.tickets.length, 0);
+    if (records[0]) {
+      latestOrder = {
+        code: records[0].order.code,
+        status: ORDER_STATUS_LABEL[records[0].order.status],
+      };
+    }
     try {
       personalityResult = await getPersonalityResultForCurrentUser();
     } catch (error) {
@@ -120,15 +105,18 @@ export default async function AccountPage({
               <p className="eyebrow">YOUR TICKETS</p>
               <h2>我的演出票</h2>
             </div>
-            <Link href="/tickets">票夹 →</Link>
           </div>
-          {orders.length ? (
-            <TicketOrderList orders={orders} />
-          ) : (
-            <article className="panel muted">
-              这个账号目前没有关联的订单。选好场次并完成登记后，票券会显示在这里。
-            </article>
-          )}
+          <Link className="panel account-shortcut" href="/tickets">
+            <strong>
+              {ticketCount} 张演出票 · {orderCount} 笔订单
+            </strong>
+            {latestOrder && (
+              <span className="muted">
+                最近订单 {latestOrder.code} · {latestOrder.status}
+              </span>
+            )}
+            <span>前往票夹查看电子票 →</span>
+          </Link>
         </section>
 
         <section className="account-section">
@@ -138,23 +126,25 @@ export default async function AccountPage({
               <h2>我的人格测试</h2>
             </div>
           </div>
-          {personalityMigrationRequired ? (
-            <div className="notice">
-              人格测试数据表尚未设置。请先运行项目提供的 Supabase 人格结果迁移。
-            </div>
-          ) : personalityResult ? (
-            <PersonalityResultView
-              character={personalityResult.character}
-              testedAt={personalityResult.testedAt}
-            />
-          ) : (
-            <article className="panel">
-              <p className="muted">
-                完成 24 道题后，你的角色结果会保存在账号中，并显示在这里。
-              </p>
-              <Link className="btn" href="/personality">开始《蝶》角色人格测试</Link>
-            </article>
-          )}
+          <Link className="panel account-shortcut" href="/personality">
+            {personalityMigrationRequired ? (
+              <strong>结果暂不可读取</strong>
+            ) : personalityResult ? (
+              <strong>{personalityResult.character.archetype} · {personalityResult.character.role}</strong>
+            ) : (
+              <strong>尚未完成测试</strong>
+            )}
+            <span className="muted">
+              {personalityMigrationRequired
+                ? "打开人格测试页面"
+                : personalityResult
+                  ? `最近测试：${new Intl.DateTimeFormat("zh-CN", {
+                      dateStyle: "medium",
+                    }).format(new Date(personalityResult.testedAt))}`
+                  : "完成测试后可在此查看简要结果"}
+            </span>
+            <span>前往人格测试查看结果 →</span>
+          </Link>
         </section>
         </div>
       ) : (

@@ -88,8 +88,8 @@ export default async function OnlineOrdersPage({
     <main className="shell">
       <SiteHeader />
       <section className="hero">
-        <h1>Supabase 在线订单</h1>
-        <p>使用已提升为管理员的电邮账号审核新订单。确认后会创建电子票。</p>
+        <h1>在线订单审核</h1>
+        <p>审核通过后自动发送出票邮件；发送失败时，可在订单卡片中手动重发。</p>
         <Link className="btn secondary" href="/admin/online-checkin">
           前往现场核销
         </Link>
@@ -162,7 +162,7 @@ export default async function OnlineOrdersPage({
                 {order.status === "pending_confirm" && (
                   <form action={confirmSupabaseOrderAction}>
                     <input type="hidden" name="code" value={order.code} />
-                    <button className="btn" type="submit">确认收款并出票</button>
+                    <button className="btn" type="submit">审核通过并出票（自动发送邮件）</button>
                   </form>
                 )}
                 {["issued", "checked_in", "deposit_refunded"].includes(order.status) && (
@@ -170,14 +170,16 @@ export default async function OnlineOrdersPage({
                     <span className="muted">
                       {order.email_sent_at
                         ? `邮件已发送：${formatShowTime(order.email_sent_at)}`
-                        : "尚未发送出票邮件"}
+                        : "出票邮件发送失败或尚未发送"}
                     </span>
-                    <form action={sendTicketEmailAction}>
-                      <input type="hidden" name="code" value={order.code} />
-                      <button className="btn secondary" type="submit">
-                        {order.email_sent_at ? "重发出票邮件" : "发送出票邮件"}
-                      </button>
-                    </form>
+                    {!order.email_sent_at && (
+                      <form action={sendTicketEmailAction}>
+                        <input type="hidden" name="code" value={order.code} />
+                        <button className="btn secondary" type="submit">
+                          手动重发出票邮件
+                        </button>
+                      </form>
+                    )}
                   </div>
                 )}
                 {(order.status === "pending_payment" ||

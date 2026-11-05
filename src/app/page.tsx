@@ -202,21 +202,26 @@ export default async function HomePage() {
       <section className="story-section" id="story">
         <div className="story-heading">
           <p className="eyebrow">The Story / 02</p>
-          <h2>命運寫下的婚約，<br />能否換來真正的自由？</h2>
+          <h2>愛，是種飛翔的方式。</h2>
         </div>
         <div className="story-copy">
-          <p className="story-tagline">愛，是種飛翔的方式。</p>
+          <p className="story-tagline">故事简介</p>
           {storyParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
         </div>
       </section>
 
       <section className="about-section" id="about">
         <div className="about-logo">
-          <Image src="/images/cu-musical-logo.jpg" alt="CU Musical 香港中文大學音樂劇社標誌" width={768} height={768} />
+          <Image
+            src="/images/cu-musical-logo.jpg"
+            alt="CU Musical 香港中文大学音乐剧社标志"
+            width={768}
+            height={768}
+          />
         </div>
         <div className="about-copy">
           <p className="eyebrow">About CU Musical / 03</p>
-          <h2>讓故事，在舞台上發生</h2>
+          <h2>关于我们</h2>
           <p>
             香港中文大學音樂劇社（CU Musical）成立於 2019 年，是香港中文大學最具活力的學生表演藝術團體之一。我們匯聚來自香港、本地、內地及國際背景的音樂劇愛好者，致力於打造高質量音樂劇製作，推動校園藝術發展與大灣區高校文化交流。
           </p>

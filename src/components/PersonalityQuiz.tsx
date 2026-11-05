@@ -133,8 +133,6 @@ export function PersonalityQuiz({ isAuthenticated }: { isAuthenticated: boolean 
     <section className="personality-quiz">
       {screen === "welcome" && (
         <article className="panel">
-          <p className="eyebrow">A CHARACTER TEST · 24 QUESTIONS</p>
-          <h2>测测你是《蝶》里的哪个人</h2>
           <p className="muted">
             一份以《蝶》角色气质为灵感的人格测试。无需登录即可查看结果；登录后可将结果保存到账号。
           </p>
