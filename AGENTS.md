@@ -8,6 +8,23 @@
 - 技术栈：Next.js 15 App Router、React 19、TypeScript、Supabase Auth/Postgres/Storage、Resend
 - 线上站点：<https://cumusical.xyz>
 - 发布平台：Netlify，`main` 分支推送会触发生产构建与部署
+- 最近代码版本：`97a3542`（`Fix homepage booking and site branding`）；Netlify 曾显示此版本为 Published
+- 用户于 2026-11-05 确认：更新生产 `EMAIL_FROM` 后手动重新部署成功
+
+## 当前状态与接手事项
+
+- 首页主视觉和页尾的登记按钮都跳到 `#shows`（Part 1「选择场次」），不是直接跳到某一场的登记页。
+- 左上角品牌文字由 `src/lib/site.ts` 的 `SITE_NAME` 控制，不再读取 Netlify 自动生成的站点名。
+- 用户要求延续参考 Strand 的简洁视觉、减少大圆角；全站支持简繁切换。
+- Resend 组织 team 已完成 `cumusical.xyz` 域名验证，DKIM/SPF 状态曾确认通过。阿里云 DNS 的 Resend 验证 TXT 已添加，`resend._domainkey` TXT 已替换为组织 team 的 DKIM 值；不要恢复个人 team 的旧 DKIM 值或删除验证记录。
+- 用户确认已在 Netlify 设置生产环境 `EMAIL_FROM` 为该已验证域名下的发件地址，并手动重新部署成功。不要在文档、聊天、截图或代码中记录/显示其具体地址或其他环境变量值。
+- 后续待办：用户希望出票邮件开头加入“本邮件由系统自动发送，请勿直接回复。”目前邮件模板尚未包含这句话；改动位置为 `src/lib/ticket-email.ts`。修改后运行构建并推送，确认 Netlify 部署成功，再测试一封真实出票邮件。
+
+演出主要信息（修改之前先与用户确认是否有更新）：
+
+- 演出：音乐剧《蝶》学生版，2026-11-21 至 2026-11-22，香港中文大学（深圳）时光胶囊黑匣子，普通话，约 150 分钟。
+- 公益免费入场，每张票需缴 ¥50 按金，到场观演后全额退还。
+- 人格测试共 24 题。
 
 ## 本地开始
 
@@ -61,7 +78,7 @@ git status --short
 - 审核通过、邮件失败提示和重发动作：`src/app/actions/supabase-admin.ts`
 - 干事端邮件状态与重发按钮：`src/app/admin/online-orders/page.tsx`
 
-审核出票后会尝试自动发送邮件；失败时订单仍可在审核页面手动重发。更新邮件文案或排版时检查 HTML 邮件兼容性、动态内容转义、订单链接和简繁文字；不要把 API Key 写入代码或日志。邮件环境变量为 `RESEND_API_KEY`、`EMAIL_FROM`、`NEXT_PUBLIC_SITE_URL`。
+审核出票后会尝试自动发送邮件；失败时订单仍可在审核页面手动重发。发件地址必须属于 Resend 已验证域名（`@cumusical.xyz`）；Gmail 地址不能直接作为 From。需要接收回复时应配置 `reply_to`，不要仅依赖“请勿回复”的文字。更新邮件文案或排版时检查 HTML 邮件兼容性、动态内容转义、订单链接和简繁文字；不要把 API Key 写入代码或日志。邮件环境变量为 `RESEND_API_KEY`、`EMAIL_FROM`、`NEXT_PUBLIC_SITE_URL`。
 
 ## 重要架构边界
 
@@ -92,8 +109,10 @@ git status --short
 
 1. 针对改动运行 `npm run build`，并检查 `git diff --check`。
 2. 涉及用户流程时，至少验证受影响页面和动作；涉及邮件时验证审核通过、失败提示、重发和发送状态；涉及权限时同时验证管理员与普通用户。
-3. 推送到 `main` 会触发 Netlify 生产部署。用户要求上线时，确认推送后的 Netlify 部署成功，再访问 <https://cumusical.xyz> 检查实际页面。不要只凭本地构建成功或 Git push 成功就宣称已上线。
-4. 未明确要求发布时，不要擅自提交或推送；部署失败时检查 Netlify Build/Deploy log，报告具体失败原因。
+3. 代码上线：在用户要求发布后，将变更提交并推送到 `main`，等待 Netlify 对应 commit 状态为 Published，再访问 <https://cumusical.xyz> 检查实际页面。不要只凭本地构建成功或 Git push 成功就宣称已上线。
+4. 仅更新 Netlify 环境变量时不需要代码提交；到项目 Deploys 点 **Trigger deploy → Deploy site** 重新构建，不需要清缓存。环境变量内容仅通过 Netlify 控制台配置，不在聊天中索取或输出。
+5. 用户曾遇到 Netlify Trigger deploy 操作被 reCAPTCHA 阻挡；若浏览器自动操作失败，告知用户手动点击并等待 Published，再继续验证。
+6. 未明确要求发布时，不要擅自提交或推送；部署失败时检查 Netlify Build/Deploy log，报告具体失败原因。
 
 ## 协作约定
 
