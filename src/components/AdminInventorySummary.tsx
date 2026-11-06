@@ -17,7 +17,7 @@ export function AdminInventorySummary({
   returnTo = "/admin/online-orders",
 }: {
   shows: AdminInventoryShow[];
-  returnTo?: "/admin/online-orders" | "/admin/online-inventory";
+  returnTo?: "/admin/online-orders";
 }) {
   const totalCapacity = shows.reduce((sum, show) => sum + show.capacity, 0);
   const totalHeld = shows.reduce((sum, show) => sum + show.held, 0);

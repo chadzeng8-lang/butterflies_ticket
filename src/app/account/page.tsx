@@ -92,9 +92,14 @@ export default async function AccountPage({
               {personalityResult ? "重新测试人格" : "开始人格测试"}
             </Link>
             {isAdmin && (
-              <Link className="btn secondary" href="/admin/online-orders">
-                管理在线订单
-              </Link>
+              <>
+                <Link className="btn secondary" href="/admin/online-orders">
+                  管理在线订单
+                </Link>
+                <Link className="btn secondary" href="/admin/online-accounts">
+                  管理账号
+                </Link>
+              </>
             )}
           </div>
         </article>

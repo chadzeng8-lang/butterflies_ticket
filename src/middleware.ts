@@ -17,11 +17,13 @@ export async function middleware(request: NextRequest) {
     );
     return NextResponse.redirect(target, 308);
   }
-  if (
-    pathname.startsWith("/admin") &&
-    pathname !== "/admin/online-orders" &&
-    pathname !== "/admin/online-checkin"
-  ) {
+  const allowedAdminPaths = new Set([
+    "/admin/online-orders",
+    "/admin/online-orders/export",
+    "/admin/online-accounts",
+    "/admin/online-checkin",
+  ]);
+  if (pathname.startsWith("/admin") && !allowedAdminPaths.has(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/online-orders";
     url.search = "";

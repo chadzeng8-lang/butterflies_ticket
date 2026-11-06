@@ -29,9 +29,6 @@ export default async function OnlineCheckInPage() {
           <Link className="btn secondary" href="/admin/online-orders">
             订单审核
           </Link>
-          <Link className="btn secondary" href="/admin/online-inventory">
-            场次库存
-          </Link>
         </div>
       </section>
       <OnlineCheckInPanel />

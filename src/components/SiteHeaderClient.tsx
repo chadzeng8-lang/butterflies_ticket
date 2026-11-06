@@ -17,40 +17,42 @@ export function SiteHeaderClient({
   return (
     <header className="topbar">
       <div className="topbar-row">
-        <Link href="/" className="brand">
-          <Image
-            className="brand-logo"
-            src="/images/cu-musical-logo.jpg"
-            alt="CU Musical"
-            width={768}
-            height={768}
-          />
-          <span>{siteName}</span>
-        </Link>
-        <nav className="nav">
-          <Link href="/">首页</Link>
-          <Link href="/shows">购票</Link>
-          <Link href="/tickets">票夹</Link>
-          {isAdmin ? (
-            <Link href="/campus-entry">入校指南</Link>
-          ) : (
-            <span className="nav-disabled" title="入校指南暂未开放">
-              入校指南（暂未开放）
-            </span>
-          )}
-          <Link href="/personality">人格测试</Link>
-          <Link href="/account">帳號</Link>
-          {isAdmin && <Link href="/admin/online-orders">管理</Link>}
-          <button
-            className="locale-toggle"
-            type="button"
-            onClick={toggleLocale}
-            aria-label={locale === "cn" ? "切换到繁体中文" : "切換至繁體中文"}
-            title={locale === "cn" ? "切换到繁体中文" : "切換至繁體中文"}
-          >
-            {locale === "cn" ? "繁" : "简"}
-          </button>
-        </nav>
+        <div className="topbar-main">
+          <Link href="/" className="brand">
+            <Image
+              className="brand-logo"
+              src="/images/cu-musical-logo.jpg"
+              alt="CU Musical"
+              width={768}
+              height={768}
+            />
+            <span>{siteName}</span>
+          </Link>
+          <nav className="nav">
+            <Link href="/">首页</Link>
+            <Link href="/shows">购票</Link>
+            <Link href="/tickets">票夹</Link>
+            {isAdmin ? (
+              <Link href="/campus-entry">入校指南</Link>
+            ) : (
+              <span className="nav-disabled" title="入校指南暂未开放">
+                入校指南（暂未开放）
+              </span>
+            )}
+            <Link href="/personality">人格测试</Link>
+            <Link href="/account">帳號</Link>
+            {isAdmin && <Link href="/admin/online-orders">管理</Link>}
+          </nav>
+        </div>
+        <button
+          className="locale-toggle"
+          type="button"
+          onClick={toggleLocale}
+          aria-label={locale === "cn" ? "切换到繁体中文" : "切換至繁體中文"}
+          title={locale === "cn" ? "切换到繁体中文" : "切換至繁體中文"}
+        >
+          {locale === "cn" ? "繁" : "简"}
+        </button>
       </div>
       <HeaderNavigationProgress />
     </header>

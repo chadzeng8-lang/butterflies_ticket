@@ -113,9 +113,7 @@ export async function updateShowInventoryAction(formData: FormData) {
 
   const nextPath = String(formData.get("next") || "").trim();
   const returnTo =
-    nextPath === "/admin/online-orders" || nextPath === "/admin/online-inventory"
-      ? nextPath
-      : "/admin/online-inventory";
+    nextPath === "/admin/online-orders" ? nextPath : "/admin/online-orders";
 
   if (!Number.isInteger(showId) || showId < 1) {
     redirect(`${returnTo}?error=invalid`);
@@ -155,7 +153,6 @@ export async function updateShowInventoryAction(formData: FormData) {
     .eq("id", showId);
   if (error) redirect(`${returnTo}?error=save`);
 
-  revalidatePath("/admin/online-inventory");
   revalidatePath("/admin/online-orders");
   revalidatePath("/shows");
   revalidatePath("/");
@@ -205,8 +202,152 @@ export async function updateSupabaseOrderAction(formData: FormData) {
   }
 
   revalidatePath("/admin/online-orders");
-  revalidatePath("/admin/online-inventory");
   revalidatePath(`/orders/${code}`);
   revalidatePath("/tickets");
   redirect("/admin/online-orders?done=edit");
+}
+
+function safeAccountsReturn(returnTo: string): string {
+  return returnTo.startsWith("/admin/online-accounts") && !returnTo.startsWith("//")
+    ? returnTo
+    : "/admin/online-accounts";
+}
+
+function accountsRedirect(returnTo: string, key: string, kind: "error" | "done") {
+  const base = safeAccountsReturn(returnTo);
+  redirect(`${base}${base.includes("?") ? "&" : "?"}${kind}=${key}`);
+}
+
+export async function rebindOrderAccountAction(formData: FormData) {
+  const supabase = await requireSupabaseAdmin();
+  const code = String(formData.get("code") || "").trim().toUpperCase();
+  const accountEmail = String(formData.get("accountEmail") || "").trim().toLowerCase();
+  const returnTo = String(formData.get("returnTo") || "").trim();
+
+  const { error } = await supabase.rpc("admin_rebind_order_account", {
+    p_order_code: code,
+    p_account_email: accountEmail,
+  });
+  if (error) {
+    const codeKey = orderEditErrorCode(error.message);
+    const mapped =
+      codeKey === "account"
+        ? "account"
+        : codeKey === "rpc_missing" || codeKey === "migration"
+          ? "migration"
+          : "rebind";
+    accountsRedirect(returnTo, mapped, "error");
+  }
+
+  revalidatePath("/admin/online-accounts");
+  revalidatePath("/admin/online-orders");
+  revalidatePath(`/orders/${code}`);
+  revalidatePath("/tickets");
+  accountsRedirect(returnTo, "rebind", "done");
+}
+
+export async function deleteAccountAction(formData: FormData) {
+  const supabase = await requireSupabaseAdmin();
+  const userId = String(formData.get("userId") || "").trim();
+  const returnTo = String(formData.get("returnTo") || "").trim();
+
+  if (!userId) {
+    accountsRedirect(returnTo, "account_missing", "error");
+  }
+
+  const { error } = await supabase.rpc("admin_delete_account", {
+    p_user_id: userId,
+  });
+  if (error) {
+    const msg = error.message || "";
+    if (msg.includes("CANNOT_DELETE_SELF")) {
+      accountsRedirect(returnTo, "delete_self", "error");
+    }
+    if (msg.includes("ACCOUNT_NOT_FOUND")) {
+      accountsRedirect(returnTo, "account_missing", "error");
+    }
+    if (msg.includes("Could not find the function") || msg.includes("PGRST202")) {
+      accountsRedirect(returnTo, "delete_migration", "error");
+    }
+    accountsRedirect(returnTo, "delete_failed", "error");
+  }
+
+  revalidatePath("/admin/online-accounts");
+  revalidatePath("/admin/online-orders");
+  revalidatePath("/tickets");
+  accountsRedirect(returnTo, "delete", "done");
+}
+
+const BULK_STATUS_OPTIONS = [
+  "pending_payment",
+  "pending_confirm",
+  "issued",
+  "cancelled",
+  "expired",
+] as const;
+
+function collectOrderCodes(formData: FormData): string[] {
+  return formData
+    .getAll("codes")
+    .map((value) => String(value || "").trim().toUpperCase())
+    .filter(Boolean);
+}
+
+export async function bulkSetOrderStatusAction(formData: FormData) {
+  const supabase = await requireSupabaseAdmin();
+  const codes = collectOrderCodes(formData);
+  const status = String(formData.get("status") || "").trim();
+
+  if (codes.length === 0) {
+    redirect("/admin/online-orders?error=bulk_none");
+  }
+  if (!BULK_STATUS_OPTIONS.includes(status as (typeof BULK_STATUS_OPTIONS)[number])) {
+    redirect("/admin/online-orders?error=bulk_status");
+  }
+
+  const { error } = await supabase.rpc("admin_bulk_set_order_status", {
+    p_order_codes: codes,
+    p_status: status,
+  });
+  if (error) {
+    const mapped = orderEditErrorCode(error.message);
+    if (mapped === "sold_out") redirect("/admin/online-orders?error=sold_out");
+    if (mapped === "rpc_missing") redirect("/admin/online-orders?error=bulk_migration");
+    if ((error.message || "").includes("NO_ORDERS_SELECTED")) {
+      redirect("/admin/online-orders?error=bulk_none");
+    }
+    redirect("/admin/online-orders?error=bulk_status_failed");
+  }
+
+  revalidatePath("/admin/online-orders");
+  revalidatePath("/admin/online-accounts");
+  revalidatePath("/tickets");
+  redirect("/admin/online-orders?done=bulk_status");
+}
+
+export async function bulkDeleteOrdersAction(formData: FormData) {
+  const supabase = await requireSupabaseAdmin();
+  const codes = collectOrderCodes(formData);
+
+  if (codes.length === 0) {
+    redirect("/admin/online-orders?error=bulk_none");
+  }
+
+  const { error } = await supabase.rpc("admin_bulk_delete_orders", {
+    p_order_codes: codes,
+  });
+  if (error) {
+    if (
+      (error.message || "").includes("Could not find the function") ||
+      (error.message || "").includes("PGRST202")
+    ) {
+      redirect("/admin/online-orders?error=bulk_migration");
+    }
+    redirect("/admin/online-orders?error=bulk_delete_failed");
+  }
+
+  revalidatePath("/admin/online-orders");
+  revalidatePath("/admin/online-accounts");
+  revalidatePath("/tickets");
+  redirect("/admin/online-orders?done=bulk_delete");
 }

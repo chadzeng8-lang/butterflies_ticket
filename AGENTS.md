@@ -70,7 +70,9 @@ git status --short
 - 票夹与找票：`src/app/tickets/page.tsx`、`src/components/TicketLookupForm.tsx`
 - 人格测试：`src/app/personality/page.tsx`、`src/components/PersonalityQuiz.tsx`、`src/lib/personality-data.json`
 - 在线干事订单审核：`src/app/admin/online-orders/page.tsx`、`src/app/actions/supabase-admin.ts`
-- 场次库存（总票数 / 剩余）：`src/app/admin/online-inventory/page.tsx`；订单管理页顶部也有汇总
+- 注册账号、订单改绑与删除账号：`src/app/admin/online-accounts/page.tsx`（需迁移 `20261106101500_admin_list_accounts.sql`、`20261106110000_admin_delete_account.sql`）
+- 订单批量改状态/删除：`src/components/OnlineOrdersBulkPanel.tsx`（需迁移 `20261106103000_admin_bulk_orders.sql`）
+- 场次库存（总票数 / 剩余）在订单管理页顶部汇总编辑：`src/components/AdminInventorySummary.tsx`
 - 线上现场核销：`src/app/admin/online-checkin/page.tsx`、`src/app/actions/supabase-checkin.ts`
 - Supabase 服务端客户端与数据访问：`src/lib/supabase/`
 
@@ -88,8 +90,8 @@ git status --short
 
 - 线上订单、电子票、账号、人格结果及线上核销依赖 Supabase。
 - Supabase 管理员通过 `profiles.role = 'admin'` 授权；不要将本地旧密码后台和 Supabase 管理员流程混为一谈。
-- 线上订单入口是 `/admin/online-orders`，库存入口是 `/admin/online-inventory`，线上核销入口是 `/admin/online-checkin`。
-- 余票 = `capacity - 有效订单票数`。总票数在管理页直接改 `shows.capacity`，不再使用内部预留。订单随时编辑若需 RPC，见 `20261105173000_admin_inventory_and_order_edit.sql`；注册账号列改绑需 `20261106093000_admin_order_account.sql`（可选）。
+- 线上订单入口是 `/admin/online-orders`，账号入口是 `/admin/online-accounts`，线上核销入口是 `/admin/online-checkin`。
+- 余票 = `capacity - 有效订单票数`。总票数在订单管理页顶部直接改 `shows.capacity`，不再使用内部预留。订单随时编辑若需 RPC，见 `20261105173000_admin_inventory_and_order_edit.sql`；订单改绑注册账号需 `20261106093000_admin_order_account.sql` 与 `20261106101500_admin_list_accounts.sql`。
 - 上传付款凭证使用 Supabase 私有 `payment-proofs` bucket；不要改为依赖 Netlify 本地文件。
 - `README.md`、`OPS.md` 含有较早的本地 JSON/部署说明，部分部署和管理流程可能过时。以当前实现、Netlify Git 集成和本指南的架构边界为准；若发现文档冲突，应顺手更新相关说明。
 
