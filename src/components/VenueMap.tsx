@@ -113,12 +113,7 @@ export function VenueMap() {
       <div className="venue-map-copy">
         <p className="eyebrow">Venue</p>
         <h3>{SHOW_VENUE.name}</h3>
-        <p>
-          {SHOW_VENUE.building}
-          <br />
-          {SHOW_VENUE.detail}
-        </p>
-        <p className="venue-map-address">{SHOW_VENUE.address}</p>
+        <p className="venue-map-address">{SHOW_VENUE.location}</p>
         <div className="venue-map-actions">
           <a className="btn secondary" href={amapMarkerUrl()} target="_blank" rel="noreferrer">
             在高德地图打开

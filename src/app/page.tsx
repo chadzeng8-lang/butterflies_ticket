@@ -216,7 +216,7 @@ export default async function HomePage() {
         <div className="section-head">
           <div>
             <p className="eyebrow">Company / 04</p>
-            <h2>演職人員</h2>
+            <h2>本輪演出演職人員</h2>
             <p>每一次振翅，都來自台前幕後共同的努力。</p>
           </div>
         </div>
@@ -255,10 +255,6 @@ export default async function HomePage() {
         )}
       </section>
 
-      <footer className="footer-note">
-        <span>CU Musical · 香港中文大學音樂劇社</span>
-        <Link href="/shows">报名购票</Link>
-      </footer>
     </main>
   );
 }

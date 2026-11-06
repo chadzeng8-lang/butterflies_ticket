@@ -153,13 +153,13 @@ export default async function ShowsPage() {
             <span>02</span>
             <div>
               <h3>时间与入场</h3>
-              <p>演出约 150 分钟（含 10 分钟中场休息），演出语言为普通话。请至少提前 10 分钟抵达完成签到；演出开始后停止检票，迟到观众须按工作人员安排入场，亦可能无法进入原计划区域就座。</p>
+              <p>演出约 150 分钟（含 10 分钟中场休息），演出语言为普通话。演出开始前20分钟开始入场；迟到观众须按工作人员安排入场，亦可能无法进入原计划区域就座。</p>
             </div>
           </article>
           <article className="guide-item">
             <span>03</span>
             <div>
-              <h3>座位安排</h3>
+              <h3>座位安排（自由入座、先到先得）</h3>
               <p>
                 <strong>蝶境区｜沉浸观演区：</strong>
                 位于场地中央，演员将在观众身边及区域内表演，适合希望近距离参与故事的观众。
@@ -200,9 +200,6 @@ export default async function ShowsPage() {
         </div>
       </section>
 
-      <footer className="footer-note">
-        <span>CU Musical · 香港中文大学音乐剧社</span>
-      </footer>
     </main>
   );
 }
