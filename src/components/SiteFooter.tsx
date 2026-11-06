@@ -1,6 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
-import { FooterWechatQr } from "@/components/FooterWechatQr";
+import { FooterQrZoom } from "@/components/FooterQrZoom";
+
+const IG_URL =
+  "https://www.instagram.com/cumusical?srtk=MWFmYzk4cTV3NndyZw%3D%3D&utm_source=qr";
+const XHS_URL =
+  "https://www.xiaohongshu.com/user/profile/6664513e0000000007006eca?xhsshare=userQrCode&exSource=";
 
 export function SiteFooter() {
   return (
@@ -18,39 +22,51 @@ export function SiteFooter() {
             </h2>
             <div className="site-footer-qrs">
               <figure className="site-footer-qr">
-                <a
-                  className="site-footer-qr-frame"
-                  href="https://www.instagram.com/cumusical?srtk=MWFmYzk4cTV3NndyZw%3D%3D&utm_source=qr"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Image
-                    src="/images/ig.jpg"
-                    alt="Instagram @CUMUSICAL 二维码"
-                    width={480}
-                    height={480}
-                  />
-                </a>
-                <figcaption>Instagram</figcaption>
+                <FooterQrZoom
+                  src="/images/ig.jpg"
+                  alt="Instagram @CUMUSICAL 二维码"
+                  title="Instagram"
+                  linkHref={IG_URL}
+                  linkLabel="instagram.com/cumusical"
+                />
+                <figcaption>
+                  <a
+                    className="site-footer-qr-link"
+                    href={IG_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Instagram
+                  </a>
+                </figcaption>
               </figure>
               <figure className="site-footer-qr">
-                <a
-                  className="site-footer-qr-frame"
-                  href="https://www.xiaohongshu.com/user/profile/6664513e0000000007006eca?xhsshare=userQrCode&exSource="
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Image
-                    src="/images/xhs.jpg"
-                    alt="小红书二维码"
-                    width={480}
-                    height={480}
-                  />
-                </a>
-                <figcaption>小红书</figcaption>
+                <FooterQrZoom
+                  src="/images/xhs.jpg"
+                  alt="小红书二维码"
+                  title="小红书"
+                  linkHref={XHS_URL}
+                  linkLabel="小红书主页"
+                />
+                <figcaption>
+                  <a
+                    className="site-footer-qr-link"
+                    href={XHS_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    小红书
+                  </a>
+                </figcaption>
               </figure>
               <figure className="site-footer-qr">
-                <FooterWechatQr />
+                <FooterQrZoom
+                  src="/images/wechat-oa.jpg"
+                  alt="微信公众号「吐露港音乐剧研究中心」二维码"
+                  title="微信公众号"
+                  width={480}
+                  height={640}
+                />
                 <figcaption>微信公众号</figcaption>
               </figure>
             </div>

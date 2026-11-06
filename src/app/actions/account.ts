@@ -20,11 +20,11 @@ export async function signInAction(
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
   const nextPath = getSafeNextPath(formData.get("next"));
-  if (!email || !password) return { error: "請輸入電郵及密碼。" };
+  if (!email || !password) return { error: "请输入邮箱及密码。" };
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: "登入失敗，請檢查電郵和密碼。" };
+  if (error) return { error: "登录失败，请检查邮箱和密码。" };
   redirect(nextPath);
 }
 
@@ -37,13 +37,13 @@ export async function signUpAction(
   const fullName = String(formData.get("fullName") || "").trim();
   const nextPath = getSafeNextPath(formData.get("next"));
   if (!email || !password || !fullName) {
-    return { error: "請填寫暱稱、電郵及密碼。" };
+    return { error: "请填写昵称、邮箱及密码。" };
   }
-  if (password.length < 8) return { error: "密碼至少需要 8 個字元。" };
+  if (password.length < 8) return { error: "密码至少需要 8 个字符。" };
 
   const supabase = await createSupabaseServerClient();
   const siteUrl = getPublicSiteUrl();
-  if (!siteUrl) return { error: "註冊設定未完成，請聯絡管理員。" };
+  if (!siteUrl) return { error: "注册设置未完成，请联系管理员。" };
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -55,11 +55,11 @@ export async function signUpAction(
       ).toString(),
     },
   });
-  if (error) return { error: "註冊失敗，請確認電郵格式並稍後再試。" };
+  if (error) return { error: "注册失败，请确认邮箱格式并稍后再试。" };
   if (!data.session) {
     return {
       message:
-        "註冊成功。請到電郵收取驗證連結，驗證後再登入。若未收到，請檢查垃圾郵件資料夾。",
+        "注册成功。请到邮箱收取验证链接，验证后再登录。若未收到，请检查垃圾邮件文件夹。",
     };
   }
   redirect(nextPath);

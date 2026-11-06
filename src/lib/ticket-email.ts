@@ -135,6 +135,7 @@ export async function sendOrderCreatedEmail(input: {
       <ol>
         <li>打开订单页，按指引缴付按金（¥50 或 HK$60 / 张，到场观演后全额退还）。</li>
         <li>上传付款截图，并点击「我已付款」提交凭证。</li>
+        <li>在订单页扫码加入微信观演群「港中深观剧群」，以便接收演出通知。</li>
         <li>提交后请耐心等待干事核对到账；确认后会再次发信通知出票。</li>
       </ol>
       <p><a href="${safeUrl}">打开订单页</a></p>

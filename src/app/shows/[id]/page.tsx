@@ -6,6 +6,7 @@ import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { audiencePricingSummary, depositRuleNotice } from "@/lib/pricing-copy";
+import { showAudienceLabel } from "@/lib/show-audience";
 import {
   createSupabaseServerClient,
   getSupabaseUser,
@@ -35,6 +36,7 @@ export default async function ShowPage({
   const isAdmin = await isCurrentUserTicketingAdmin(supabase);
   const saleOpen = isTicketSaleOpen();
   const canRegister = saleOpen || isAdmin;
+  const audience = showAudienceLabel(show.startsAt);
 
   return (
     <main className="shell shell-narrow">
@@ -51,10 +53,26 @@ export default async function ShowPage({
         <h1>{formatShowTime(show.startsAt)}</h1>
         <p>
           《蝶》沉浸版展演 · {show.venue}
+          {audience ? (
+            <>
+              {" · "}
+              <span className="show-audience">{audience}</span>
+            </>
+          ) : null}
         </p>
       </section>
 
       <div className="grid">
+        {audience ? (
+          <article className="panel">
+            <h2>开放对象</h2>
+            <p>
+              <span className="show-audience">{audience}</span>
+              。请确认本人符合本场要求后再登记。
+            </p>
+          </article>
+        ) : null}
+
         <article className="panel">
           <h2>费用</h2>
           <div className="meta">

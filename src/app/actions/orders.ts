@@ -93,10 +93,10 @@ export async function createOrderAction(
       SHOW_OFF_SALE: "该场次已停售。",
       BAD_QUANTITY: "每笔订单最多购买 5 张票。",
       SOLD_OUT: "余票不足，请减少票数或换场。",
-      AUTH_REQUIRED: "請先登入電郵帳號再登記。",
-      PERSON_TICKET_LIMIT: "同一帳號最多登記 5 張票。",
-      AUTH_LOOKUP_FAILED: "登入状态检查失败，请重新登录。",
-      ORDER_CREATE_FAILED: "建立訂單失敗，請稍後再試。",
+      AUTH_REQUIRED: "请先登录邮箱账号再登记。",
+      PERSON_TICKET_LIMIT: "同一账号最多登记 5 张票。",
+      AUTH_LOOKUP_FAILED: "登录状态检查失败，请重新登录。",
+      ORDER_CREATE_FAILED: "创建订单失败，请稍后再试。",
     };
     return { error: map[msg] || "下单失败，请稍后重试。" };
   }
@@ -178,7 +178,7 @@ export async function markPaidAction(
       BAD_FILE_TYPE: "仅支持图片截图。",
       ORDER_NOT_PAYABLE: "订单不存在、已过期或已提交付款。",
       PROOF_UPLOAD_FAILED: "付款截图上传失败，请稍后重试。",
-      AUTH_LOOKUP_FAILED: "登入状态检查失败，请重新登录。",
+      AUTH_LOOKUP_FAILED: "登录状态检查失败，请重新登录。",
       ORDER_LOOKUP_FAILED: "订单查询失败，请稍后重试。",
       PROOF_CLEANUP_FAILED: "付款截图处理失败，请联系工作人员。",
     };

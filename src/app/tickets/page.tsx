@@ -67,7 +67,7 @@ export default async function TicketsPage() {
       {user ? (
         <section className="grid">
           <div className="row" style={{ justifyContent: "space-between" }}>
-            <h2>我的订单与电子票</h2>
+            <h2>我的订单与购票编号</h2>
             <form action={signOutAction}>
               <button className="btn secondary" type="submit">登出</button>
             </form>

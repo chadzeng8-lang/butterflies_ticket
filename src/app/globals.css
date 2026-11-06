@@ -1,7 +1,9 @@
+/* 默认只声明简体；繁体在 html[data-locale="hk"] 时才切换族名，浏览器按需下载 */
 @font-face {
   font-family: "TicketSimplified";
   src: url("/fonts/simplified.ttf") format("truetype");
   font-display: swap;
+  font-weight: 100 900;
   unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+20000-2FA1F;
 }
 
@@ -9,18 +11,29 @@
   font-family: "TicketTraditional";
   src: url("/fonts/noto-serif-tc-regular.otf") format("opentype");
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
   font-display: swap;
   unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+20000-2FA1F;
 }
 
-@font-face {
-  font-family: "TicketTraditional";
-  src: url("/fonts/noto-serif-tc-bold.otf") format("opentype");
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+20000-2FA1F;
+/* Netlify 角标会挡住场次 CTA，生产页隐藏 */
+iframe#nl-badge-frame,
+iframe[title="Powered by Netlify"],
+iframe[src*="netlify"],
+div[id^="nf-"],
+a[href*="netlify.com"][style*="position: fixed"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+.stage-gallery-skeleton {
+  width: 100%;
+  min-height: clamp(14rem, 42vw, 26rem);
+  background: var(--bg-soft);
 }
 
 :root {
@@ -1293,6 +1306,33 @@ textarea {
   background: #fff;
 }
 
+.order-wechat-group {
+  margin: 0;
+  text-align: center;
+}
+
+.order-wechat-group-zoom {
+  display: inline-block;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  line-height: 0;
+}
+
+.order-wechat-group-image {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  border: 1px solid var(--line-strong);
+  background: #111;
+}
+
+.order-wechat-group-dialog {
+  width: min(88vw, 360px);
+}
+
 .payment-methods {
   display: grid;
   gap: 1rem;
@@ -1647,14 +1687,25 @@ textarea {
   text-align: center;
 }
 
+.site-footer-qr-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.site-footer-qr-link:hover {
+  color: var(--ink);
+}
+
 .site-footer-qr-dialog {
-  width: min(92vw, 420px);
-  max-height: 92vh;
+  width: min(84vw, 320px);
+  max-height: 78vh;
   margin: auto;
   padding: 0;
   border: 1px solid var(--line);
   background: #0c0c0c;
   color: var(--ink);
+  overflow: hidden;
 }
 
 .site-footer-qr-dialog::backdrop {
@@ -1666,14 +1717,23 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.65rem 0.8rem;
+  padding: 0.45rem 0.6rem;
   border-bottom: 1px solid var(--line);
+}
+
+.site-footer-qr-dialog-link {
+  margin: 0;
+  padding: 0.65rem 0.75rem 0.85rem;
+  border-top: 1px solid var(--line);
+  text-align: center;
+  font-size: 0.9rem;
+  word-break: break-all;
 }
 
 .site-footer-qr-dialog img {
   display: block;
   width: 100%;
-  max-height: calc(92vh - 3.5rem);
+  max-height: calc(78vh - 5.2rem);
   object-fit: contain;
   background: #fff;
 }
@@ -1788,6 +1848,15 @@ textarea {
 
 .event-facts strong {
   font-weight: 500;
+}
+
+.event-audience-lines {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.event-facts .event-audience-lines span {
+  color: inherit;
 }
 
 .booking-summary {
@@ -1935,6 +2004,10 @@ textarea {
   border-bottom-color: var(--gold, currentColor);
 }
 
+.booking-step-muted {
+  color: rgba(244, 243, 239, 0.45);
+}
+
 .venue-map-block {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -2038,6 +2111,11 @@ textarea {
 
 .show-date .meta {
   gap: 0.18rem;
+}
+
+.show-audience {
+  color: #9a2f2f;
+  font-weight: 600;
 }
 
 .show-availability {
@@ -2248,6 +2326,37 @@ textarea {
   background: transparent;
 }
 
+.photo-gallery-indexed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  width: 100%;
+  height: clamp(16rem, 48vw, 28rem);
+  outline: none;
+  background: #000;
+}
+
+.photo-gallery-indexed:focus-visible {
+  outline: 1px solid rgba(224, 185, 77, 0.55);
+  outline-offset: 4px;
+}
+
+.photo-gallery-indexed .gallery-photo {
+  grid-area: 1 / 1;
+  display: none;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
+  background: #000;
+}
+
+.photo-gallery-indexed .gallery-photo.is-active {
+  display: block;
+}
+
 .gallery-photo {
   position: relative;
   min-width: 0;
@@ -2257,27 +2366,23 @@ textarea {
   background: var(--bg-soft);
 }
 
-.gallery-photo-natural {
-  overflow: visible;
-}
-
 .gallery-photo img,
 .gallery-photo-img {
   object-fit: cover;
   transition: transform 0.5s var(--ease);
 }
 
-.gallery-photo-natural .gallery-photo-img {
-  position: static !important;
-  width: auto !important;
-  height: 100% !important;
-  max-width: none;
+.photo-gallery-indexed .gallery-photo-img {
   object-fit: contain;
   object-position: center;
 }
 
-.gallery-photo:not(.gallery-photo-natural):hover img {
+.gallery-photo:hover img {
   transform: scale(1.025);
+}
+
+.photo-gallery-indexed .gallery-photo:hover img {
+  transform: none;
 }
 
 .stage-gallery-hint {
@@ -2783,11 +2888,24 @@ textarea {
   }
 
   .booking-timeline {
-    gap: 0.55rem 0.65rem;
+    grid-template-columns: 1fr;
+    gap: 0.95rem;
+    padding: 1.1rem 0;
+  }
+
+  .booking-timeline::before {
+    display: none;
+  }
+
+  .booking-timeline-item {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.65rem;
+    row-gap: 0;
   }
 
   .booking-timeline-item h3 {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 
   .payment-fold summary {

@@ -26,7 +26,7 @@ export function OrderForm({
         <input
           name="phone"
           required
-          placeholder="用于现场核对与找回电子票"
+          placeholder="用于现场核对与票务查询"
           inputMode="tel"
           autoComplete="tel"
           disabled={pending}

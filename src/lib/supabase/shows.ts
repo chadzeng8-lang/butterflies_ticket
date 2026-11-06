@@ -1,4 +1,5 @@
 import type { Show } from "@/lib/types";
+import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type SupabaseShowRow = {
@@ -42,7 +43,8 @@ export function mapSupabaseShow(row: SupabaseShowRow): Show {
 }
 
 export async function listSupabaseShows(includeOffSale = false): Promise<Show[]> {
-  const supabase = await createSupabaseServerClient();
+  // Public/anonymous client so marketing pages can use ISR without reading cookies.
+  const supabase = createSupabasePublicClient();
   let query = supabase.from("shows").select("*").order("starts_at");
   if (!includeOffSale) query = query.eq("on_sale", true);
 

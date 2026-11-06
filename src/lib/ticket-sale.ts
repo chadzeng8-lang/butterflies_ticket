@@ -1,5 +1,5 @@
-/** 开票时间：2026-11-06 11:00（香港/深圳，UTC+8） */
-export const TICKET_SALE_OPENS_AT = new Date("2026-11-06T11:00:00+08:00");
+/** 开票时间：2026-11-09 20:00（香港/深圳，UTC+8） */
+export const TICKET_SALE_OPENS_AT = new Date("2026-11-09T20:00:00+08:00");
 
 export function isTicketSaleOpen(now: Date = new Date()): boolean {
   return now.getTime() >= TICKET_SALE_OPENS_AT.getTime();

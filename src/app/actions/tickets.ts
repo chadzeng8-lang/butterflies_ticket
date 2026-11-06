@@ -74,13 +74,13 @@ export async function lookupTicketsAction(
   const buyerName = String(formData.get("buyerName") || "").trim();
   const contact = String(formData.get("contact") || "").trim();
   if (!buyerName || !contact) {
-    return { error: "請填寫購票姓名，以及下單時使用的手機號碼或電郵。" };
+    return { error: "请填写购票姓名，以及下单时使用的手机号码或邮箱。" };
   }
 
   const phoneDigits = contact.replace(/\D/g, "");
   const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
   if (phoneDigits.length < 7 && !looksLikeEmail) {
-    return { error: "請輸入有效的手機號碼或電郵地址。" };
+    return { error: "请输入有效的手机号码或邮箱地址。" };
   }
 
   const accountOrders = await listSupabaseOrdersForCurrentUser();
@@ -123,7 +123,7 @@ export async function lookupTicketsAction(
 
   const orders = (data || []) as GuestTicketLookupRow[];
   if (orders.length === 0) {
-    return { error: "未找到符合資料的訂單，請確認姓名及完整手機號碼或電郵地址。" };
+    return { error: "未找到符合资料的订单，请确认姓名及完整手机号码或邮箱地址。" };
   }
 
   const { data: infoRows } = await supabase.rpc("get_orders_purchase_info", {

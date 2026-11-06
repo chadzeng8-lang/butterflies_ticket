@@ -1,6 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function needsSessionRefresh(pathname: string) {
+  if (
+    pathname === "/" ||
+    pathname === "/shows" ||
+    pathname === "/personality" ||
+    pathname === "/campus-entry"
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = request.headers.get("host") || "";
@@ -28,6 +40,10 @@ export async function middleware(request: NextRequest) {
     url.pathname = "/admin/online-orders";
     url.search = "";
     return NextResponse.redirect(url);
+  }
+
+  if (!needsSessionRefresh(pathname)) {
+    return NextResponse.next({ request });
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -60,6 +76,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ttf|otf|woff2?)$).*)",
   ],
 };

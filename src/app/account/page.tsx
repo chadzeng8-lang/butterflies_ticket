@@ -121,7 +121,7 @@ export default async function AccountPage({
                 最近订单 {latestOrder.code} · {latestOrder.status}
               </span>
             )}
-            <span>前往票夹查看电子票 →</span>
+            <span>前往票夹查看购票编号 →</span>
           </Link>
         </section>
 

@@ -1,10 +1,17 @@
-import { PersonalityQuiz } from "@/components/PersonalityQuiz";
+import nextDynamic from "next/dynamic";
 import { PersonalityResultView } from "@/components/PersonalityResultView";
 import { SiteHeader } from "@/components/SiteHeader";
 import { createSupabaseServerClient, getSupabaseUser } from "@/lib/supabase/server";
 import { getPersonalityResultForCurrentUser } from "@/lib/supabase/personality";
 
 export const dynamic = "force-dynamic";
+
+const PersonalityQuiz = nextDynamic(
+  () => import("@/components/PersonalityQuiz").then((mod) => mod.PersonalityQuiz),
+  {
+    loading: () => <div className="panel muted">人格测试加载中…</div>,
+  },
+);
 
 export default async function PersonalityPage() {
   const supabase = await createSupabaseServerClient();

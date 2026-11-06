@@ -60,20 +60,46 @@ function loadAmapScript(key: string, securityCode?: string): Promise<AMapNamespa
 }
 
 export function VenueMap() {
+  const blockRef = useRef<HTMLElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<{ destroy: () => void } | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "fallback">("loading");
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "fallback">("idle");
+  const [shouldLoad, setShouldLoad] = useState(false);
 
   const key = process.env.NEXT_PUBLIC_AMAP_KEY?.trim();
   const securityCode = process.env.NEXT_PUBLIC_AMAP_SECURITY_CODE?.trim();
 
   useEffect(() => {
+    const node = blockRef.current;
+    if (!node) return;
+
+    if (typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px 0px" },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!shouldLoad) return;
     if (!key || !containerRef.current) {
       setStatus("fallback");
       return;
     }
 
     let cancelled = false;
+    setStatus("loading");
 
     loadAmapScript(key, securityCode)
       .then((AMap) => {
@@ -106,10 +132,10 @@ export function VenueMap() {
       mapRef.current?.destroy();
       mapRef.current = null;
     };
-  }, [key, securityCode]);
+  }, [key, securityCode, shouldLoad]);
 
   return (
-    <aside className="venue-map-block" aria-label="演出地点">
+    <aside className="venue-map-block" aria-label="演出地点" ref={blockRef}>
       <div className="venue-map-copy">
         <p className="eyebrow">Venue</p>
         <h3>{SHOW_VENUE.name}</h3>
@@ -133,7 +159,9 @@ export function VenueMap() {
         />
         {status !== "ready" && (
           <div className="venue-map-fallback">
-            {status === "loading" ? "地图加载中…" : "地图暂不可用，请使用上方导航链接。"}
+            {status === "idle" || status === "loading"
+              ? "地图加载中…"
+              : "地图暂不可用，请使用上方导航链接。"}
           </div>
         )}
       </div>

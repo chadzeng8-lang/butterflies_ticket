@@ -14,6 +14,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const localeRef = useRef(locale);
   const converters = useRef<Record<Locale, Converter> | null>(null);
   const convertDocument = useRef<() => void>(() => {});
+  const ensureConverters = useRef<null | (() => Promise<void>)>(null);
 
   const changeLocale = useCallback((next: Locale) => {
     localeRef.current = next;
@@ -37,6 +38,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     const originalText = new WeakMap<Text, string>();
     const renderedText = new WeakMap<Text, string>();
     const originalAttributes = new WeakMap<Element, Map<string, { source: string; rendered: string }>>();
+    let cleanupObserver = () => {};
 
     function shouldConvert(node: Node) {
       const parent = node.parentElement;
@@ -44,18 +46,19 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     }
 
     function convertText(node: Text) {
-      if (!shouldConvert(node)) return;
+      if (!shouldConvert(node) || !converters.current) return;
       let source = originalText.get(node);
       if (source === undefined || node.nodeValue !== renderedText.get(node)) {
         source = node.nodeValue ?? "";
         originalText.set(node, source);
       }
-      const rendered = converters.current?.[localeRef.current](source) ?? source;
+      const rendered = converters.current[localeRef.current](source);
       renderedText.set(node, rendered);
       if (node.nodeValue !== rendered) node.nodeValue = rendered;
     }
 
     function convertAttributes(element: Element) {
+      if (!converters.current) return;
       let attributes = originalAttributes.get(element);
       if (!attributes) {
         attributes = new Map();
@@ -66,13 +69,14 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
         if (value === null) continue;
         const previous = attributes.get(name);
         const source = previous && value === previous.rendered ? previous.source : value;
-        const rendered = converters.current?.[localeRef.current](source) ?? source;
+        const rendered = converters.current[localeRef.current](source);
         attributes.set(name, { source, rendered });
         if (value !== rendered) element.setAttribute(name, rendered);
       }
     }
 
     function convertSubtree(root: Node) {
+      if (!converters.current) return;
       if (root.nodeType === Node.TEXT_NODE) {
         convertText(root as Text);
       } else if (root.nodeType === Node.ELEMENT_NODE) {
@@ -85,15 +89,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    void import("opencc-js").then(({ Converter }) => {
-      if (!active) return;
-      converters.current = {
-        cn: Converter({ from: "hk", to: "cn" }),
-        hk: Converter({ from: "cn", to: "hk" }),
-      };
-      convertDocument.current = () => convertSubtree(document.body);
-      convertDocument.current();
-
+    function startObserver() {
       const observer = new MutationObserver((records) => {
         for (const record of records) {
           if (record.type === "characterData" && record.target instanceof Text) {
@@ -113,20 +109,48 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
         subtree: true,
       });
       cleanupObserver = () => observer.disconnect();
-    });
+    }
 
-    let cleanupObserver = () => {};
+    ensureConverters.current = async () => {
+      if (converters.current || !active) return;
+      const { Converter } = await import("opencc-js");
+      if (!active) return;
+      converters.current = {
+        cn: Converter({ from: "hk", to: "cn" }),
+        hk: Converter({ from: "cn", to: "hk" }),
+      };
+      convertDocument.current = () => convertSubtree(document.body);
+      startObserver();
+      convertDocument.current();
+    };
+
+    // Default simplified Chinese needs no converter. Only load OpenCC when HK is active.
+    if (localeRef.current === "hk") {
+      void ensureConverters.current();
+    }
+
     return () => {
       active = false;
       cleanupObserver();
       convertDocument.current = () => {};
+      ensureConverters.current = null;
     };
   }, []);
 
   useEffect(() => {
     document.documentElement.dataset.locale = locale;
     document.documentElement.lang = locale === "cn" ? "zh-CN" : "zh-HK";
-    convertDocument.current();
+
+    if (locale === "cn" && !converters.current) {
+      // Still on default simplified source text — nothing to convert.
+      return;
+    }
+
+    const load = ensureConverters.current;
+    if (!load) return;
+    void load().then(() => {
+      convertDocument.current();
+    });
   }, [locale]);
 
   return (

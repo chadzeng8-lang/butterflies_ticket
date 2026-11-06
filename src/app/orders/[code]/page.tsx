@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkPaidForm } from "@/components/MarkPaidForm";
+import { OrderWechatGroup } from "@/components/OrderWechatGroup";
 import { PaymentMethods } from "@/components/PaymentMethods";
 import { SiteHeader } from "@/components/SiteHeader";
 import { isCurrentUserTicketingAdmin } from "@/lib/admin";
@@ -108,10 +109,14 @@ export default async function OrderPage({
           )}
           {order.status === "pending_confirm" && sp.paid !== "1" && (
             <div className="success" style={{ marginTop: "0.9rem" }}>
-              状态：待干事确认收款。确认后将发放电子票。
+              状态：待干事确认收款。确认后将正式出票。
             </div>
           )}
         </article>
+
+        {order.status !== "expired" && order.status !== "cancelled" && (
+          <OrderWechatGroup />
+        )}
 
         {order.status === "pending_payment" && (
           <article className="panel">

@@ -2,11 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StageGallery } from "@/components/StageGallery";
-import { listSupabaseShows } from "@/lib/supabase/shows";
 import { depositHeroNote } from "@/lib/pricing-copy";
+import { SHOW_AUDIENCE_SUMMARY_LINES } from "@/lib/show-audience";
 import { isTicketSaleOpen, ticketSaleOpensLabel } from "@/lib/ticket-sale";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const storyParagraphs = [
   "在遙遠的「世界盡頭」，生活著一群被稱為蝶人的族群。他們背負著古老的詛咒，被排斥於主流世界之外，在漫長的漂泊與等待中尋找改變命運的希望。",
@@ -98,10 +98,9 @@ const productionTimeline = [
 ];
 
 export default async function HomePage() {
-  const shows = await listSupabaseShows(false);
-  const firstOpen = shows[0];
+  // Homepage CTA only needs the sale clock — skip Supabase round-trip on first paint.
   const saleOpen = isTicketSaleOpen();
-  const canBook = Boolean(firstOpen) && saleOpen;
+  const canBook = saleOpen;
   return (
     <main className="shell home-shell">
       <SiteHeader />
@@ -113,11 +112,13 @@ export default async function HomePage() {
             alt="音樂劇《蝶》學生版演出海報"
             width={768}
             height={1093}
+            sizes="(max-width: 720px) 92vw, 360px"
+            quality={72}
             priority
           />
         </div>
         <div className="event-summary">
-          <p className="eyebrow">CU Musical · 2027 年度大戲</p>
+          <p className="eyebrow">CU Musical · 年度大戏</p>
           <h1 id="event-title">音樂劇《蝶》學生版</h1>
           <p className="event-tagline">愛，是種飛翔的方式。</p>
           <p className="event-intro">
@@ -128,6 +129,14 @@ export default async function HomePage() {
             <div>
               <span>演出時間</span>
               <strong>2026.11.21 — 11.22</strong>
+            </div>
+            <div>
+              <span>场次说明</span>
+              <strong className="event-audience-lines">
+                {SHOW_AUDIENCE_SUMMARY_LINES.map((line) => (
+                  <span key={line}>{line}</span>
+                ))}
+              </strong>
             </div>
             <div>
               <span>演出地點</span>
@@ -151,7 +160,7 @@ export default async function HomePage() {
               </Link>
             ) : (
               <button className="btn booking-button" disabled>
-                {firstOpen ? `${ticketSaleOpensLabel()} 开票` : "暫無餘席"}
+                {`${ticketSaleOpensLabel()} 开票`}
               </button>
             )}
           </div>
@@ -176,6 +185,9 @@ export default async function HomePage() {
             alt="CU Musical 香港中文大学音乐剧社标志"
             width={768}
             height={768}
+            sizes="190px"
+            quality={70}
+            loading="lazy"
           />
         </div>
         <div className="about-copy">
@@ -250,7 +262,7 @@ export default async function HomePage() {
           <Link className="btn" href="/shows">選擇場次並登記 <span aria-hidden>→</span></Link>
         ) : (
           <button className="btn" disabled>
-            {firstOpen ? `${ticketSaleOpensLabel()} 开票` : "暫無餘席"}
+            {`${ticketSaleOpensLabel()} 开票`}
           </button>
         )}
       </section>
