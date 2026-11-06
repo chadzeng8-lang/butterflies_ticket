@@ -199,10 +199,6 @@ export default async function HomePage() {
           <p>從初次相遇到沉浸式舞台，記錄《蝶》一路走來的每一步。</p>
         </div>
         <StageGallery />
-        <div className="gallery-premiere">
-          <span>2026.10.17 · 深圳安托山公共文化中心向日葵厅</span>
-          <p>《蝶》精簡版於此首演。11 月 21 日至 22 日，與更多觀眾再次相見。</p>
-        </div>
         <ol className="production-timeline">
           {productionTimeline.map((item) => (
             <li className="timeline-item" key={`${item.date}-${item.title}`}>

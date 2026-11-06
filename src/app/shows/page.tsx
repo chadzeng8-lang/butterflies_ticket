@@ -36,6 +36,30 @@ export default async function ShowsPage() {
           </div>
         </div>
 
+        <ol className="booking-timeline">
+          <li className="booking-timeline-item">
+            <span className="booking-timeline-index">01</span>
+            <span className="booking-timeline-dot" aria-hidden />
+            <h3>选择场次进行登记</h3>
+          </li>
+          <li className="booking-timeline-item">
+            <span className="booking-timeline-index">02</span>
+            <span className="booking-timeline-dot" aria-hidden />
+            <h3>缴付按金并上传凭证</h3>
+          </li>
+          <li className="booking-timeline-item">
+            <span className="booking-timeline-index">03</span>
+            <span className="booking-timeline-dot" aria-hidden />
+            <h3>
+              {isAdmin ? (
+                <Link href="/campus-entry">微信小程序预约入校</Link>
+              ) : (
+                <>微信小程序预约入校（暂未开放）</>
+              )}
+            </h3>
+          </li>
+        </ol>
+
         <div className="booking-summary booking-summary-inline">
           <div>
             <span className="booking-kicker">公益演出</span>
@@ -62,26 +86,6 @@ export default async function ShowsPage() {
         <PendingLink className="ticket-lookup-link" href="/tickets" pendingLabel="加载中…">
           已有订单？查询电子票 <span aria-hidden>→</span>
         </PendingLink>
-
-        <ol className="booking-timeline">
-          <li className="booking-timeline-item">
-            <span className="booking-timeline-index">01</span>
-            <span className="booking-timeline-dot" aria-hidden />
-            <h3>选择场次进行登记</h3>
-          </li>
-          <li className="booking-timeline-item">
-            <span className="booking-timeline-index">02</span>
-            <span className="booking-timeline-dot" aria-hidden />
-            <h3>缴付按金并上传凭证</h3>
-          </li>
-          <li className="booking-timeline-item">
-            <span className="booking-timeline-index">03</span>
-            <span className="booking-timeline-dot" aria-hidden />
-            <h3>
-              <Link href="/campus-entry">微信小程序预约入校</Link>
-            </h3>
-          </li>
-        </ol>
 
         <div className="booking-shows-head" id="show-list">
           <h3>选择场次</h3>
@@ -184,11 +188,13 @@ export default async function ShowsPage() {
             <div>
               <h3>入校预约</h3>
               <p>
-                演出位于香港中文大学（深圳）校园内，观众需先完成访客入校预约。请依图文步骤操作，被访人等信息请按指南填写。
+                演出位于香港中文大学（深圳）校园内，观众需先完成访客入校预约。入校指南暂未开放，开放后将在此提供图文步骤。
               </p>
-              <p style={{ marginTop: "0.75rem" }}>
-                <Link href="/campus-entry">查看入校预约指南 →</Link>
-              </p>
+              {isAdmin ? (
+                <p style={{ marginTop: "0.75rem" }}>
+                  <Link href="/campus-entry">查看入校预约指南 →</Link>
+                </p>
+              ) : null}
             </div>
           </article>
         </div>

@@ -89,7 +89,7 @@ git status --short
 - 线上订单、电子票、账号、人格结果及线上核销依赖 Supabase。
 - Supabase 管理员通过 `profiles.role = 'admin'` 授权；不要将本地旧密码后台和 Supabase 管理员流程混为一谈。
 - 线上订单入口是 `/admin/online-orders`，库存入口是 `/admin/online-inventory`，线上核销入口是 `/admin/online-checkin`。
-- 余票 = `capacity - 有效订单票数`。总票数在管理页直接改 `shows.capacity`，不再使用内部预留。订单随时编辑若需 RPC，见 `20261105173000_admin_inventory_and_order_edit.sql`（可选）。
+- 余票 = `capacity - 有效订单票数`。总票数在管理页直接改 `shows.capacity`，不再使用内部预留。订单随时编辑若需 RPC，见 `20261105173000_admin_inventory_and_order_edit.sql`；注册账号列改绑需 `20261106093000_admin_order_account.sql`（可选）。
 - 上传付款凭证使用 Supabase 私有 `payment-proofs` bucket；不要改为依赖 Netlify 本地文件。
 - `README.md`、`OPS.md` 含有较早的本地 JSON/部署说明，部分部署和管理流程可能过时。以当前实现、Netlify Git 集成和本指南的架构边界为准；若发现文档冲突，应顺手更新相关说明。
 

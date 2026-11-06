@@ -1,25 +1,51 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
+import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import {
   CAMPUS_ENTRY_HIGHLIGHTS,
   CAMPUS_ENTRY_STEPS,
 } from "@/lib/campus-entry-guide";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "入校预约指南",
   description: "香港中文大学（深圳）访客入校预约图文指南 · 《蝶》观众专用",
 };
 
-export default function CampusEntryPage() {
+export default async function CampusEntryPage() {
+  const supabase = await createSupabaseServerClient();
+  const isAdmin = await isCurrentUserTicketingAdmin(supabase);
+
+  if (!isAdmin) {
+    return (
+      <main className="shell shell-narrow">
+        <SiteHeader />
+        <section className="hero">
+          <p className="eyebrow">Campus Entry</p>
+          <h1>入校预约指南</h1>
+          <p className="notice">入校指南暂未开放，开放后将在此发布完整预约步骤。</p>
+          <div className="row" style={{ marginTop: "1.1rem" }}>
+            <Link className="btn" href="/shows">
+              返回选场次
+            </Link>
+            <Link className="btn secondary" href="/">
+              返回首页
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="shell shell-narrow">
       <SiteHeader />
 
       <section className="hero">
-        <p className="eyebrow">Campus Entry</p>
+        <p className="eyebrow">Campus Entry · 管理员预览</p>
         <h1>入校预约指南</h1>
         <p>
           演出地点位于香港中文大学（深圳）校园内。观众需先通过微信小程序完成访客入校预约，再按审批结果入校观演。

@@ -26,6 +26,7 @@ type OnlineOrder = {
   id: number;
   code: string;
   show_id: number;
+  user_id: string;
   buyer_name: string;
   phone: string;
   contact_extra: string;
@@ -91,10 +92,37 @@ function statusBadgeClass(status: OrderStatus): string {
   }
 }
 
+function matchesQuery(
+  order: OnlineOrder,
+  show: OnlineShow | undefined,
+  accountEmail: string,
+  tickets: OnlineTicket[],
+  query: string,
+): boolean {
+  if (!query) return true;
+  const haystack = [
+    order.code,
+    order.buyer_name,
+    order.phone,
+    order.contact_extra,
+    accountEmail,
+    order.status,
+    ORDER_STATUS_LABEL[order.status],
+    order.admin_note,
+    show?.title,
+    show?.venue,
+    show ? formatShowTime(show.starts_at) : "",
+    ...tickets.map((ticket) => ticket.code),
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(query);
+}
+
 export default async function OnlineOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; done?: string }>;
+  searchParams: Promise<{ error?: string; done?: string; q?: string }>;
 }) {
   const supabase = await createSupabaseServerClient();
   const user = await getSupabaseUser(supabase);
@@ -109,6 +137,8 @@ export default async function OnlineOrdersPage({
   if (profile?.role !== "admin") redirect("/account");
 
   const params = await searchParams;
+  const query = String(params.q || "").trim().toLowerCase();
+
   const { data: orderData, error: ordersError } = await supabase
     .from("orders")
     .select("*")
@@ -124,6 +154,19 @@ export default async function OnlineOrdersPage({
   if (showsError) throw new Error("SUPABASE_SHOW_LOOKUP_FAILED");
   const shows = (showData || []) as OnlineShow[];
   for (const show of shows) showsById.set(show.id, show);
+
+  const accountEmailByOrderId = new Map<number, string>();
+  const { data: accountRows, error: accountError } = await supabase.rpc(
+    "admin_list_order_account_emails",
+  );
+  if (!accountError && Array.isArray(accountRows)) {
+    for (const row of accountRows as {
+      order_id: number;
+      account_email: string;
+    }[]) {
+      accountEmailByOrderId.set(row.order_id, row.account_email || "");
+    }
+  }
 
   const heldByShow = new Map<number, number>();
   for (const order of orders) {
@@ -170,7 +213,17 @@ export default async function OnlineOrdersPage({
         .createSignedUrl(order.payment_proof_path, 60);
       if (error) throw new Error("PAYMENT_PROOF_URL_FAILED");
       proofUrls.set(order.id, data.signedUrl);
-    })
+    }),
+  );
+
+  const visibleOrders = orders.filter((order) =>
+    matchesQuery(
+      order,
+      showsById.get(order.show_id),
+      accountEmailByOrderId.get(order.id) || order.contact_extra || "",
+      ticketsByOrder.get(order.id) || [],
+      query,
+    ),
   );
 
   const errorMessage =
@@ -199,30 +252,32 @@ export default async function OnlineOrdersPage({
                           ? "张数无效。"
                           : params.error === "buyer"
                             ? "姓名与手机号不能为空。"
-                            : params.error === "rpc_missing" ||
-                            params.error === "migration"
-                        ? "库存/编辑功能未就绪。请在 Supabase 依次执行 20261105170000 与 20261105173000 迁移。"
-                        : params.error === "capacity"
-                          ? "总票数须为至少 1 的整数。"
-                          : params.error === "public_negative" ||
-                              params.error === "internal_gt_capacity"
-                            ? "票数调整无效：对外剩余不能小于已占用，内部预留也不能超过总票数。"
-                            : params.error === "edit"
-                              ? "订单保存失败，请刷新后重试。"
-                              : params.error === "save"
-                                ? "票数保存失败，请刷新后重试。"
-                                : params.error?.startsWith("email_")
-                                  ? "查询订单或发送记录失败，请刷新页面后重试。"
-                                  : params.error
-                                    ? "操作失败，订单状态可能已变更；请刷新后重新核对。"
-                                    : null;
+                            : params.error === "account"
+                              ? "注册账号不存在：请填写已在本站注册的电邮。"
+                              : params.error === "rpc_missing" ||
+                                  params.error === "migration"
+                                ? "库存/编辑功能未就绪。请在 Supabase 依次执行 20261105170000、20261105173000 与 20261106093000 迁移。"
+                                : params.error === "capacity"
+                                  ? "总票数须为至少 1 的整数。"
+                                  : params.error === "public_negative" ||
+                                      params.error === "internal_gt_capacity"
+                                    ? "票数调整无效：对外剩余不能小于已占用，内部预留也不能超过总票数。"
+                                    : params.error === "edit"
+                                      ? "订单保存失败，请刷新后重试。"
+                                      : params.error === "save"
+                                        ? "票数保存失败，请刷新后重试。"
+                                        : params.error?.startsWith("email_")
+                                          ? "查询订单或发送记录失败，请刷新页面后重试。"
+                                          : params.error
+                                            ? "操作失败，订单状态可能已变更；请刷新后重新核对。"
+                                            : null;
 
   return (
-    <main className="shell">
+    <main className="shell shell-wide">
       <SiteHeader />
       <section className="hero">
         <h1>在线订单管理</h1>
-        <p>查看全部报名信息与状态；可随时编辑联系人、场次、张数、状态与备注。</p>
+        <p>表格中直接编辑并保存；可按订单号、姓名、手机、注册账号等查询。</p>
         <div className="row" style={{ gap: "0.75rem", flexWrap: "wrap" }}>
           <Link className="btn secondary" href="/admin/online-inventory">
             场次库存
@@ -233,7 +288,10 @@ export default async function OnlineOrdersPage({
         </div>
       </section>
 
-      <AdminInventorySummary shows={inventoryShows} returnTo="/admin/online-orders" />
+      <AdminInventorySummary
+        shows={inventoryShows}
+        returnTo="/admin/online-orders"
+      />
 
       {errorMessage && (
         <div className="error" role="alert">
@@ -253,173 +311,271 @@ export default async function OnlineOrdersPage({
                   : "订单状态已更新。"}
         </div>
       )}
+
+      <form className="admin-sheet-search" method="get" action="/admin/online-orders">
+        <label>
+          查询订单
+          <input
+            type="search"
+            name="q"
+            defaultValue={params.q || ""}
+            placeholder="订单号 / 姓名 / 手机 / 注册账号 / 状态…"
+          />
+        </label>
+        <button className="btn secondary" type="submit">
+          查询
+        </button>
+        {query ? (
+          <Link className="btn secondary" href="/admin/online-orders">
+            清除
+          </Link>
+        ) : null}
+        <span className="muted admin-sheet-count">
+          显示 {visibleOrders.length} / {orders.length} 笔
+        </span>
+      </form>
+
+      {accountError && (
+        <div className="notice" role="status">
+          注册账号列需先执行迁移 `20261106093000_admin_order_account.sql`，否则暂以联系电邮回退显示。
+        </div>
+      )}
+
       {orders.length === 0 ? (
         <div className="panel muted">目前没有在线订单。</div>
+      ) : visibleOrders.length === 0 ? (
+        <div className="panel muted">没有符合查询条件的订单。</div>
       ) : (
-        <div className="grid">
-          {orders.map((order) => {
-            const show = showsById.get(order.show_id);
-            const tickets = ticketsByOrder.get(order.id) || [];
-            return (
-              <article className="card" key={order.id}>
-                <div className="row" style={{ justifyContent: "space-between" }}>
-                  <h2 className="order-code">{order.code}</h2>
-                  <span className={statusBadgeClass(order.status)}>
-                    {ORDER_STATUS_LABEL[order.status]}
-                  </span>
-                </div>
-                <div className="meta" style={{ margin: "0.6rem 0" }}>
-                  <span>
-                    {show?.title || "场次资料缺失"}
-                    {show ? ` · ${formatShowTime(show.starts_at)} · ${show.venue}` : ""}
-                  </span>
-                  <span>
-                    {order.buyer_name} · {order.phone}
-                    {order.contact_extra ? ` · ${order.contact_extra}` : ""}
-                  </span>
-                  <span>
-                    {order.quantity} 张 · 应付{" "}
-                    <strong>
-                      {centsToCny(order.ticket_total_cents + order.deposit_total_cents)}
-                    </strong>
-                  </span>
-                  <span>下单 {formatShowTime(order.created_at)}</span>
-                  {order.confirmed_at && (
-                    <span>确认 {formatShowTime(order.confirmed_at)}</span>
-                  )}
-                  {order.email_sent_at && (
-                    <span>邮件 {formatShowTime(order.email_sent_at)}</span>
-                  )}
-                  {order.admin_note && <span>备注：{order.admin_note}</span>}
-                  {tickets.length > 0 && (
-                    <span>
-                      电子票：
-                      {tickets
-                        .map((ticket) => {
-                          const flags = [
-                            ticket.checked_in_at ? "已核销" : null,
-                            ticket.deposit_refunded_at ? "按金已退" : null,
-                          ].filter(Boolean);
-                          return flags.length
-                            ? `${ticket.code}（${flags.join("·")}）`
-                            : ticket.code;
-                        })
-                        .join("、")}
-                    </span>
-                  )}
-                </div>
-                {proofUrls.has(order.id) && (
-                  <p>
-                    <a href={proofUrls.get(order.id)} target="_blank" rel="noreferrer">
-                      查看付款截图
-                    </a>
-                  </p>
-                )}
-
-                <form action={updateSupabaseOrderAction} className="admin-order-edit">
-                  <input type="hidden" name="code" value={order.code} />
-                  <label>
-                    姓名
-                    <input name="buyerName" defaultValue={order.buyer_name} required />
-                  </label>
-                  <label>
-                    手机
-                    <input name="phone" defaultValue={order.phone} required />
-                  </label>
-                  <label>
-                    电邮 / 额外联系
-                    <input name="contactExtra" defaultValue={order.contact_extra} />
-                  </label>
-                  <label>
-                    张数
-                    <input
-                      name="quantity"
-                      type="number"
-                      min={1}
-                      max={20}
-                      defaultValue={order.quantity}
-                      required
-                    />
-                  </label>
-                  <label>
-                    场次
-                    <select name="showId" defaultValue={order.show_id}>
-                      {shows.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {formatShowTime(item.starts_at)} · {item.venue}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    状态
-                    <select name="status" defaultValue={order.status}>
-                      {STATUS_OPTIONS.map((status) => (
-                        <option key={status} value={status}>
-                          {ORDER_STATUS_LABEL[status]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="admin-order-note">
-                    管理员备注
-                    <input name="adminNote" defaultValue={order.admin_note} />
-                  </label>
-                  <PendingSubmitButton className="btn" pendingLabel="保存中…">
-                    保存修改
-                  </PendingSubmitButton>
-                </form>
-
-                {order.status === "pending_confirm" && (
-                  <form action={confirmSupabaseOrderAction} style={{ marginTop: "0.8rem" }}>
-                    <input type="hidden" name="code" value={order.code} />
-                    <PendingSubmitButton pendingLabel="出票中…">
-                      审核通过并出票（自动发送邮件）
-                    </PendingSubmitButton>
-                  </form>
-                )}
-                {["issued", "checked_in", "deposit_refunded"].includes(order.status) && (
-                  <div className="row" style={{ marginTop: "0.8rem" }}>
-                    <span className="muted">
-                      {order.email_sent_at
-                        ? `邮件已发送：${formatShowTime(order.email_sent_at)}`
-                        : "出票邮件发送失败或尚未发送"}
-                    </span>
-                    <form action={sendTicketEmailAction}>
-                      <input type="hidden" name="code" value={order.code} />
-                      <PendingSubmitButton
-                        className="btn secondary"
-                        pendingLabel="发送中…"
+        <div className="admin-sheet-wrap">
+          <table className="admin-sheet">
+            <thead>
+              <tr>
+                <th>订单号</th>
+                <th>状态</th>
+                <th>场次</th>
+                <th>姓名</th>
+                <th>手机</th>
+                <th>注册账号</th>
+                <th>联系电邮</th>
+                <th>张数</th>
+                <th>应付</th>
+                <th>下单</th>
+                <th>备注</th>
+                <th>凭证 / 票</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleOrders.map((order) => {
+                const formId = `order-edit-${order.id}`;
+                const tickets = ticketsByOrder.get(order.id) || [];
+                const accountEmail =
+                  accountEmailByOrderId.get(order.id) ||
+                  order.contact_extra ||
+                  "";
+                return (
+                  <tr key={order.id}>
+                    <td className="admin-sheet-code">
+                      <form id={formId} action={updateSupabaseOrderAction}>
+                        <input type="hidden" name="code" value={order.code} />
+                      </form>
+                      <Link href={`/orders/${order.code}`}>{order.code}</Link>
+                      <span className={statusBadgeClass(order.status)}>
+                        {ORDER_STATUS_LABEL[order.status]}
+                      </span>
+                    </td>
+                    <td>
+                      <select
+                        form={formId}
+                        name="status"
+                        defaultValue={order.status}
+                        aria-label={`${order.code} 状态`}
                       >
-                        {order.email_sent_at ? "再次发送出票邮件" : "手动重发出票邮件"}
-                      </PendingSubmitButton>
-                    </form>
-                  </div>
-                )}
-                {(order.status === "pending_payment" ||
-                  order.status === "pending_confirm") && (
-                  <div className="row" style={{ marginTop: "0.8rem" }}>
-                    <form action={closeSupabaseOrderAction}>
-                      <input type="hidden" name="code" value={order.code} />
-                      <input type="hidden" name="status" value="cancelled" />
-                      <input type="hidden" name="reason" value="管理员驳回" />
-                      <PendingSubmitButton className="btn danger" pendingLabel="处理中…">
-                        驳回订单
-                      </PendingSubmitButton>
-                    </form>
-                    <form action={closeSupabaseOrderAction}>
-                      <input type="hidden" name="code" value={order.code} />
-                      <input type="hidden" name="status" value="expired" />
-                      <input type="hidden" name="reason" value="管理员释放库存" />
-                      <PendingSubmitButton className="btn secondary" pendingLabel="处理中…">
-                        释放库存
-                      </PendingSubmitButton>
-                    </form>
-                  </div>
-                )}
-              </article>
-            );
-          })}
+                        {STATUS_OPTIONS.map((status) => (
+                          <option key={status} value={status}>
+                            {ORDER_STATUS_LABEL[status]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        form={formId}
+                        name="showId"
+                        defaultValue={order.show_id}
+                        aria-label={`${order.code} 场次`}
+                      >
+                        {shows.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {formatShowTime(item.starts_at)} · {item.venue}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        form={formId}
+                        name="buyerName"
+                        defaultValue={order.buyer_name}
+                        required
+                        aria-label={`${order.code} 姓名`}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        form={formId}
+                        name="phone"
+                        defaultValue={order.phone}
+                        required
+                        aria-label={`${order.code} 手机`}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        form={formId}
+                        name="accountEmail"
+                        type="email"
+                        defaultValue={accountEmail}
+                        placeholder="已注册电邮"
+                        aria-label={`${order.code} 注册账号`}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        form={formId}
+                        name="contactExtra"
+                        type="email"
+                        defaultValue={order.contact_extra}
+                        placeholder="出票联系电邮"
+                        aria-label={`${order.code} 联系电邮`}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        form={formId}
+                        name="quantity"
+                        type="number"
+                        min={1}
+                        max={20}
+                        defaultValue={order.quantity}
+                        required
+                        aria-label={`${order.code} 张数`}
+                      />
+                    </td>
+                    <td className="admin-sheet-readonly">
+                      {centsToCny(
+                        order.ticket_total_cents + order.deposit_total_cents,
+                      )}
+                    </td>
+                    <td className="admin-sheet-readonly">
+                      {formatShowTime(order.created_at)}
+                    </td>
+                    <td>
+                      <input
+                        form={formId}
+                        name="adminNote"
+                        defaultValue={order.admin_note}
+                        aria-label={`${order.code} 备注`}
+                      />
+                    </td>
+                    <td className="admin-sheet-meta">
+                      {proofUrls.has(order.id) ? (
+                        <a
+                          href={proofUrls.get(order.id)}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          付款截图
+                        </a>
+                      ) : (
+                        <span className="muted">无凭证</span>
+                      )}
+                      {tickets.length > 0 ? (
+                        <span className="muted">
+                          {tickets
+                            .map((ticket) => {
+                              const flags = [
+                                ticket.checked_in_at ? "核" : null,
+                                ticket.deposit_refunded_at ? "退" : null,
+                              ].filter(Boolean);
+                              return flags.length
+                                ? `${ticket.code}(${flags.join("")})`
+                                : ticket.code;
+                            })
+                            .join(" ")}
+                        </span>
+                      ) : null}
+                      {order.email_sent_at ? (
+                        <span className="muted">
+                          邮件 {formatShowTime(order.email_sent_at)}
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="admin-sheet-actions">
+                      <button type="submit" form={formId} className="btn">
+                        保存
+                      </button>
+                      {order.status === "pending_confirm" && (
+                        <form action={confirmSupabaseOrderAction}>
+                          <input type="hidden" name="code" value={order.code} />
+                          <PendingSubmitButton
+                            className="btn secondary"
+                            pendingLabel="出票中…"
+                          >
+                            出票
+                          </PendingSubmitButton>
+                        </form>
+                      )}
+                      {["issued", "checked_in", "deposit_refunded"].includes(
+                        order.status,
+                      ) && (
+                        <form action={sendTicketEmailAction}>
+                          <input type="hidden" name="code" value={order.code} />
+                          <PendingSubmitButton
+                            className="btn secondary"
+                            pendingLabel="发送中…"
+                          >
+                            {order.email_sent_at ? "重发邮件" : "发邮件"}
+                          </PendingSubmitButton>
+                        </form>
+                      )}
+                      {(order.status === "pending_payment" ||
+                        order.status === "pending_confirm") && (
+                        <>
+                          <form action={closeSupabaseOrderAction}>
+                            <input type="hidden" name="code" value={order.code} />
+                            <input type="hidden" name="status" value="cancelled" />
+                            <input type="hidden" name="reason" value="管理员驳回" />
+                            <PendingSubmitButton
+                              className="btn danger"
+                              pendingLabel="处理中…"
+                            >
+                              驳回
+                            </PendingSubmitButton>
+                          </form>
+                          <form action={closeSupabaseOrderAction}>
+                            <input type="hidden" name="code" value={order.code} />
+                            <input type="hidden" name="status" value="expired" />
+                            <input
+                              type="hidden"
+                              name="reason"
+                              value="管理员释放库存"
+                            />
+                            <PendingSubmitButton
+                              className="btn secondary"
+                              pendingLabel="处理中…"
+                            >
+                              释放
+                            </PendingSubmitButton>
+                          </form>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </main>

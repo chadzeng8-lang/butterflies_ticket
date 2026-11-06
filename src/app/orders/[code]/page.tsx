@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { MarkPaidForm } from "@/components/MarkPaidForm";
 import { PaymentMethods } from "@/components/PaymentMethods";
 import { SiteHeader } from "@/components/SiteHeader";
+import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { depositAmounts } from "@/lib/payment-methods";
 import { depositPerPersonLabel } from "@/lib/pricing-copy";
 import { toDataUrl } from "@/lib/qr";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { signTicketCode } from "@/lib/ticket-token";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 
@@ -26,6 +28,8 @@ export default async function OrderPage({
   const supabaseRecord = await getSupabaseOrderWithShow(decodeURIComponent(code));
   if (!supabaseRecord) notFound();
   const { order, show } = supabaseRecord;
+  const supabase = await createSupabaseServerClient();
+  const isAdmin = await isCurrentUserTicketingAdmin(supabase);
 
   const total = order.ticketTotalCents + order.depositTotalCents;
   const depositBoth = depositAmounts(order.quantity);
@@ -171,8 +175,12 @@ export default async function OrderPage({
 
         <p>
           <Link href="/tickets">去票夹查询</Link> ·{" "}
-          <Link href="/campus-entry">入校预约指南</Link> ·{" "}
-          <Link href="/">返回首页</Link>
+          {isAdmin ? (
+            <Link href="/campus-entry">入校预约指南</Link>
+          ) : (
+            <span className="muted">入校指南（暂未开放）</span>
+          )}{" "}
+          · <Link href="/">返回首页</Link>
         </p>
       </div>
     </main>

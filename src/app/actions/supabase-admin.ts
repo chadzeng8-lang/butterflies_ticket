@@ -167,6 +167,7 @@ function orderEditErrorCode(message: string | undefined): string {
   if (msg.includes("SOLD_OUT")) return "sold_out";
   if (msg.includes("BAD_QUANTITY")) return "quantity";
   if (msg.includes("BUYER_DETAILS_REQUIRED")) return "buyer";
+  if (msg.includes("ACCOUNT_NOT_FOUND")) return "account";
   if (msg.includes("ORDER_NOT_FOUND")) return "order_missing";
   if (msg.includes("SHOW_NOT_FOUND")) return "show_missing";
   if (msg.includes("Could not find the function") || msg.includes("PGRST202")) {
@@ -181,6 +182,7 @@ export async function updateSupabaseOrderAction(formData: FormData) {
   const buyerName = String(formData.get("buyerName") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
   const contactExtra = String(formData.get("contactExtra") || "").trim();
+  const accountEmail = String(formData.get("accountEmail") || "").trim().toLowerCase();
   const quantity = Number.parseInt(String(formData.get("quantity") || ""), 10);
   const status = String(formData.get("status") || "").trim();
   const adminNote = String(formData.get("adminNote") || "").trim();
@@ -196,6 +198,7 @@ export async function updateSupabaseOrderAction(formData: FormData) {
     p_status: status,
     p_admin_note: adminNote,
     p_show_id: showId && Number.isInteger(showId) ? showId : null,
+    p_account_email: accountEmail || null,
   });
   if (error) {
     redirect(`/admin/online-orders?error=${orderEditErrorCode(error.message)}`);

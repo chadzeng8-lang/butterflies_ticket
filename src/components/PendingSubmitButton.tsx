@@ -7,6 +7,7 @@ type Props = {
   pendingLabel?: string;
   className?: string;
   disabled?: boolean;
+  form?: string;
 };
 
 /** 用于任意 `<form action={serverAction}>`：提交后立刻禁用并显示加载态。 */
@@ -15,6 +16,7 @@ export function PendingSubmitButton({
   pendingLabel = "处理中…",
   className = "btn",
   disabled = false,
+  form,
 }: Props) {
   const { pending } = useFormStatus();
   const busy = pending || disabled;
@@ -22,6 +24,7 @@ export function PendingSubmitButton({
   return (
     <button
       type="submit"
+      form={form}
       className={`${className}${pending ? " is-pending" : ""}`}
       disabled={busy}
       aria-busy={pending}

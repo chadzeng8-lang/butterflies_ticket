@@ -31,7 +31,13 @@ export function SiteHeaderClient({
           <Link href="/">首页</Link>
           <Link href="/shows">购票</Link>
           <Link href="/tickets">票夹</Link>
-          <Link href="/campus-entry">入校指南</Link>
+          {isAdmin ? (
+            <Link href="/campus-entry">入校指南</Link>
+          ) : (
+            <span className="nav-disabled" title="入校指南暂未开放">
+              入校指南（暂未开放）
+            </span>
+          )}
           <Link href="/personality">人格测试</Link>
           <Link href="/account">帳號</Link>
           {isAdmin && <Link href="/admin/online-orders">管理</Link>}
