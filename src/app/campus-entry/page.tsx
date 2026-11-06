@@ -1,116 +1,58 @@
-import Image from "next/image";
 import Link from "next/link";
+import { CampusGuideSteps } from "@/components/CampusGuideSteps";
 import { SiteHeader } from "@/components/SiteHeader";
-import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import {
-  CAMPUS_ENTRY_HIGHLIGHTS,
-  CAMPUS_ENTRY_STEPS,
+  CAMPUS_ROUTE_META,
+  CAMPUS_ROUTE_STEPS,
 } from "@/lib/campus-entry-guide";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "入校预约指南",
-  description: "香港中文大学（深圳）访客入校预约图文指南 · 《蝶》观众专用",
+  title: "入校指南",
+  description: "香港中文大学（深圳）入校扫码登记与到场路线 · 《蝶》观众专用",
 };
 
-export default async function CampusEntryPage() {
-  const supabase = await createSupabaseServerClient();
-  const isAdmin = await isCurrentUserTicketingAdmin(supabase);
-
-  if (!isAdmin) {
-    return (
-      <main className="shell shell-narrow">
-        <SiteHeader />
-        <section className="hero">
-          <p className="eyebrow">Campus Entry</p>
-          <h1>入校预约指南</h1>
-          <p className="notice">入校指南暂未开放，开放后将在此发布完整预约步骤。</p>
-          <div className="row" style={{ marginTop: "1.1rem" }}>
-            <Link className="btn" href="/shows">
-              返回选场次
-            </Link>
-            <Link className="btn secondary" href="/">
-              返回首页
-            </Link>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
+export default function CampusEntryPage() {
   return (
     <main className="shell shell-narrow">
       <SiteHeader />
 
       <section className="hero">
-        <p className="eyebrow">Campus Entry · 管理员预览</p>
-        <h1>入校预约指南</h1>
-        <p>
-          演出地点位于香港中文大学（深圳）校园内。观众需先通过微信小程序完成访客入校预约，再按审批结果入校观演。
-        </p>
+        <h1>入校指南</h1>
       </section>
 
       <section className="panel campus-entry-summary">
-        <h2>请按以下信息填写</h2>
-        <p className="muted">被访人信息请勿自行更改，以免影响审核。</p>
+        <h2>扫码登记</h2>
+        <p className="muted">请使用微信扫描下方二维码完成入校登记。</p>
+        <div className="campus-entry-qr-placeholder" aria-live="polite">
+          <span className="campus-entry-qr-box" aria-hidden />
+          <p className="notice">二维码暂未开放，开放后将在此展示。</p>
+        </div>
+      </section>
+
+      <section className="panel campus-entry-summary">
+        <h2>{CAMPUS_ROUTE_META.title}</h2>
+        <p className="muted">登记完成后，可按下列实景路线前往剧场。</p>
         <dl className="campus-entry-highlights">
-          {CAMPUS_ENTRY_HIGHLIGHTS.map((item) => (
-            <div key={item.label}>
-              <dt>{item.label}</dt>
-              <dd>{item.value}</dd>
-            </div>
-          ))}
+          <div>
+            <dt>剧场位置</dt>
+            <dd>{CAMPUS_ROUTE_META.venue}</dd>
+          </div>
         </dl>
       </section>
 
-      <section className="campus-entry-steps">
-        {CAMPUS_ENTRY_STEPS.map((step, index) => (
-          <article key={step.image} className="campus-entry-step">
-            <div className="campus-entry-step-copy">
-              <span className="campus-entry-step-index">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <h2>{step.title}</h2>
-              <p>{step.body}</p>
-              {step.tips && step.tips.length > 0 && (
-                <ul className="campus-entry-tips">
-                  {step.tips.map((tip) => (
-                    <li key={tip}>{tip}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <figure className="campus-entry-figure">
-              <Image
-                src={step.image}
-                alt={`步骤 ${index + 1}：${step.title}`}
-                width={780}
-                height={1680}
-                className="campus-entry-image"
-                sizes="(max-width: 720px) 100vw, 420px"
-              />
-            </figure>
-          </article>
-        ))}
-      </section>
+      <CampusGuideSteps
+        steps={CAMPUS_ROUTE_STEPS}
+        imageClassName="campus-entry-image campus-entry-route-image"
+      />
 
       <section className="panel">
         <h2>温馨提示</h2>
         <div className="meta">
-          <span>建议提前完成预约，并留意短信与小程序中的审批结果。</span>
-          <span>
-            也可在网页查询：{" "}
-            <a
-              href="https://visitcampus.cuhk.edu.cn/h5/admission-tours-q"
-              target="_blank"
-              rel="noreferrer"
-            >
-              visitcampus.cuhk.edu.cn
-            </a>
-          </span>
-          <span>若演出当天仍未审核通过，请及时联系主办方。</span>
+          <span>入校登记二维码开放后，请提前完成扫码登记。</span>
+          <span>入校时请按现场要求出示登记凭证；私家车不能入校。</span>
+          <span>如有疑问，请及时联系主办方。</span>
         </div>
         <div className="row" style={{ marginTop: "1.1rem" }}>
           <Link className="btn" href="/shows">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FooterQrZoom } from "@/components/FooterQrZoom";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 const IG_URL =
   "https://www.instagram.com/cumusical?srtk=MWFmYzk4cTV3NndyZw%3D%3D&utm_source=qr";
@@ -12,7 +13,10 @@ export function SiteFooter() {
       <div className="site-footer-inner">
         <div className="footer-note">
           <span>CU Musical · 香港中文大学音乐剧社</span>
-          <Link href="/shows">报名购票</Link>
+          <span className="footer-note-links">
+            <Link href="/shows">报名购票</Link>
+            <Link href="/privacy">个人信息收集声明</Link>
+          </span>
         </div>
 
         <div className="site-footer-contact">
@@ -76,8 +80,8 @@ export function SiteFooter() {
             <h2 id="footer-collab" className="eyebrow">
               合作
             </h2>
-            <a className="site-footer-email" href="mailto:cuhkmusical@gmail.com">
-              cuhkmusical@gmail.com
+            <a className="site-footer-email" href={`mailto:${CONTACT_EMAIL}`}>
+              {CONTACT_EMAIL}
             </a>
           </section>
         </div>

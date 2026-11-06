@@ -18,6 +18,9 @@ create index if not exists order_attendees_order_id_idx
 
 alter table public.order_attendees enable row level security;
 
+drop policy if exists "Buyers and admins can view order attendees"
+  on public.order_attendees;
+
 create policy "Buyers and admins can view order attendees"
   on public.order_attendees for select to authenticated
   using (

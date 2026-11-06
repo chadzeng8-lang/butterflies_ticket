@@ -79,7 +79,7 @@ where id = (
 | `/tickets` | 票夹 / 找票 |
 | `/account` | 注册登录 |
 | `/personality` | 24 题人格测试 |
-| `/campus-entry` | 入校指南（当前仅管理员入口开放） |
+| `/campus-entry` | 入校指南（全员可见；扫码登记 + 到场路线） |
 | `/admin/online-orders` | 订单审核、库存、批量、导出、邮件重发 |
 | `/admin/online-accounts` | 账号与订单改绑 / 删除 |
 | `/admin/online-checkin` | 现场核销登记 |

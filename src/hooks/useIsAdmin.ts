@@ -15,42 +15,38 @@ export function useIsAdmin() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (!hasSupabaseAuthCookie()) return;
-
     let cancelled = false;
-    let idleId = 0;
-    let timeoutId = 0;
+    const supabase = createSupabaseBrowserClient();
 
-    const run = () => {
-      const supabase = createSupabaseBrowserClient();
-      void (async () => {
-        const { data: authData } = await supabase.auth.getUser();
-        const user = authData.user;
-        if (!user) {
-          if (!cancelled) setIsAdmin(false);
-          return;
-        }
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .maybeSingle();
-        if (!cancelled) setIsAdmin(profile?.role === "admin");
-      })();
+    const refresh = async () => {
+      if (!hasSupabaseAuthCookie()) {
+        if (!cancelled) setIsAdmin(false);
+        return;
+      }
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+      if (!user) {
+        if (!cancelled) setIsAdmin(false);
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!cancelled) setIsAdmin(profile?.role === "admin");
     };
 
-    if (typeof window.requestIdleCallback === "function") {
-      idleId = window.requestIdleCallback(run, { timeout: 1500 });
-    } else {
-      timeoutId = window.setTimeout(run, 200);
-    }
+    void refresh();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void refresh();
+    });
 
     return () => {
       cancelled = true;
-      if (idleId && typeof window.cancelIdleCallback === "function") {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId) window.clearTimeout(timeoutId);
+      subscription.unsubscribe();
     };
   }, []);
 

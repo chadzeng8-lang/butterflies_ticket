@@ -120,12 +120,12 @@ textarea {
 }
 
 .shell {
-  width: min(1080px, calc(100% - 2rem));
+  width: min(1180px, calc(100% - 2rem));
   padding: 0 0 4.5rem;
 }
 
 .shell-narrow {
-  width: min(920px, calc(100% - 2rem));
+  width: min(1180px, calc(100% - 2rem));
   padding: 0 0 4.5rem;
 }
 
@@ -1641,7 +1641,7 @@ textarea {
 }
 
 .site-footer {
-  width: min(1080px, calc(100% - 2rem));
+  width: min(1180px, calc(100% - 2rem));
   max-width: 100%;
   margin: 0 auto;
   padding: 0 0 3.5rem;
@@ -1791,8 +1791,61 @@ textarea {
   flex-wrap: wrap;
 }
 
+.footer-note-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+}
+
+.footer-note a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.footer-note a:hover {
+  color: var(--ink);
+}
+
+.privacy-copy h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  margin: 0 0 0.55rem;
+}
+
+.privacy-copy p,
+.privacy-copy li {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.privacy-copy p {
+  margin: 0;
+}
+
+.privacy-copy p + p,
+.privacy-copy ul + p {
+  margin-top: 0.75rem;
+}
+
+.privacy-copy ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.privacy-copy a,
+.privacy-inline a {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.privacy-inline {
+  margin-bottom: 0;
+}
+
 .home-shell {
-  width: min(1180px, calc(100% - 3rem));
+  width: min(1180px, calc(100% - 2rem));
   max-width: 100%;
   min-width: 0;
   overflow-x: clip;
@@ -2262,7 +2315,7 @@ textarea {
 .production-timeline {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: clamp(1.25rem, 4vw, 3.5rem);
+  column-gap: clamp(1.5rem, 4vw, 3rem);
   margin: 2rem 0 0;
   padding: 0;
   list-style: none;
@@ -2271,7 +2324,7 @@ textarea {
 
 .timeline-item {
   display: grid;
-  grid-template-columns: minmax(110px, 0.62fr) minmax(0, 1.38fr);
+  grid-template-columns: 9.5rem minmax(0, 1fr);
   gap: 1rem;
   padding: 1.1rem 0;
   border-bottom: 1px solid var(--line);
@@ -2281,6 +2334,7 @@ textarea {
   color: var(--muted);
   font-size: 0.86rem;
   line-height: 1.65;
+  white-space: nowrap;
 }
 
 .timeline-item h3 {
@@ -2529,7 +2583,8 @@ textarea {
 .credits-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(2rem, 6vw, 5rem);
+  column-gap: clamp(1.5rem, 4vw, 3rem);
+  row-gap: 2rem;
 }
 
 .credits-group h3 {
@@ -2546,7 +2601,7 @@ textarea {
 
 .credits-list > div {
   display: grid;
-  grid-template-columns: minmax(5rem, 0.65fr) minmax(0, 1.35fr);
+  grid-template-columns: 9.5rem minmax(0, 1fr);
   gap: 1rem;
   padding: 0.58rem 0;
   border-bottom: 1px solid var(--line);
@@ -2686,6 +2741,30 @@ textarea {
   max-width: 420px;
   height: auto;
   margin: 0 auto;
+}
+
+.campus-entry-route-image {
+  max-width: 360px;
+  object-fit: contain;
+  background: #111;
+}
+
+.campus-entry-qr-placeholder {
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+  margin-top: 1.15rem;
+  text-align: center;
+}
+
+.campus-entry-qr-box {
+  display: block;
+  width: min(220px, 70vw);
+  aspect-ratio: 1;
+  border: 1px dashed var(--line);
+  background:
+    linear-gradient(45deg, transparent 46%, rgba(255, 255, 255, 0.06) 46% 54%, transparent 54%),
+    rgba(255, 255, 255, 0.02);
 }
 
 .closing-cta {
@@ -3009,7 +3088,8 @@ textarea {
 @media (max-width: 640px) {
   .shell,
   .shell-narrow,
-  .shell-wide {
+  .shell-wide,
+  .site-footer {
     width: calc(100% - 1.25rem);
   }
 
@@ -3058,7 +3138,7 @@ textarea {
   }
 
   .home-shell {
-    width: min(100% - 1.25rem, 1180px);
+    width: calc(100% - 1.25rem);
   }
 
   .brand-logo {
@@ -3128,8 +3208,9 @@ textarea {
     margin-top: 1.5rem;
   }
 
-  .timeline-item {
-    grid-template-columns: minmax(105px, 0.55fr) minmax(0, 1.45fr);
+  .timeline-item,
+  .credits-list > div {
+    grid-template-columns: 8.75rem minmax(0, 1fr);
     gap: 0.75rem;
   }
 

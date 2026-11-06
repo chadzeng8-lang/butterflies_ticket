@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AdminOnly } from "@/components/AdminOnly";
 import { ShowsBookingPanel } from "@/components/ShowsBookingPanel";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VenueMap } from "@/components/VenueMap";
@@ -101,15 +100,13 @@ export default async function ShowsPage() {
           <article className="guide-item">
             <span>07</span>
             <div>
-              <h3>入校预约</h3>
+              <h3>入校登记</h3>
               <p>
-                演出位于香港中文大学（深圳）校园内，观众需先完成访客入校预约。入校指南暂未开放，开放后将在此提供图文步骤。
+                演出位于香港中文大学（深圳）校园内，观众需扫码完成入校登记。登记二维码暂未开放，开放后可在入校指南页扫码。
               </p>
-              <AdminOnly>
-                <p style={{ marginTop: "0.75rem" }}>
-                  <Link href="/campus-entry">查看入校预约指南 →</Link>
-                </p>
-              </AdminOnly>
+              <p style={{ marginTop: "0.75rem" }}>
+                <Link href="/campus-entry">查看入校指南 →</Link>
+              </p>
             </div>
           </article>
         </div>

@@ -214,7 +214,7 @@ export async function sendTicketIssuedEmail(input: {
             : "购票编号"
         }与登记手机号 <strong>${phone}</strong>。</li>
         <li>演出当天提前入场，向工作人员报购票编号并核对手机号。</li>
-        <li>入校预约指南开放后，请按网站「入校指南」完成访客预约。</li>
+        <li>入校登记二维码开放后，请按网站「入校指南」扫码完成入校登记。</li>
       </ol>
       <p><a href="${safeUrl}">打开订单页</a></p>
       <p>请妥善保存购票编号与登记手机号；如长时间未在网站看到编号，可联系主办方协助。</p>

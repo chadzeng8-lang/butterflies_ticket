@@ -7,9 +7,9 @@
 - 代码仓库：`chadzeng8-lang/butterflies_ticket`
 - 技术栈：Next.js 15 App Router、React 19、TypeScript、Supabase Auth/Postgres/Storage、Resend
 - 线上站点：<https://cumusical.xyz>
-- 发布平台：Netlify，`main` 分支推送会触发生产构建与部署
-- 最近代码版本：`a393133`（`Ship sale reopen, audience rules, WeChat group CTA, and load fixes`）；2026-11-06 已推送并在生产页确认开票时间与场次说明已更新
-- 用户于 2026-11-05 确认：更新生产 `EMAIL_FROM` 后手动重新部署成功
+- 发布平台：Netlify 项目 `butterflies-ticket`（团队 CU Musical / `cuhkmusical@gmail.com`），`main` 分支推送会触发生产构建与部署。域名 DNS 在阿里云：apex `A` → `75.2.60.5`，`www` `CNAME` → `butterflies-ticket.netlify.app`。项目 Visitor access 须为 Public。
+- 最近代码版本：`6a95e54`；2026-11-06 已迁移到新团队并 Published；生产页确认开票时间为 2026-11-09 20:00 及首页场次说明
+- 用户于 2026-11-05 确认：更新生产 `EMAIL_FROM` 后手动重新部署成功；迁移后环境变量已在新项目重新导入（名称见下文，勿在文档记录值）
 
 ## 当前状态与接手事项
 
@@ -25,8 +25,9 @@
 - 出票后对用户展示「购票编号」（每场从 1 起），不展示票码/二维码；入场核对编号与手机号。编号计算见 `get_order_purchase_numbers`（迁移 `20261106120000_order_purchase_numbers.sql`）。
 - 转账备注为**购票编号及手机号**（不是旧订单号）；订单联系手机默认取首位观众电话。购票编号在下单后即可按场次顺序计算，付款页会同时展示编号与手机。
 - 入校政策观众信息：每位观众姓名 / 电话 / 证件号（内地身份证或香港回乡证），报名时填写，不参与付款确认；订单详情可编辑。表 `order_attendees`，迁移 `20261106160000_order_attendees.sql`，RPC `save_order_attendees`。
-- 导航「入校指南」对普通用户暂未开放；管理员可见 `/campus-entry`。
+- 导航「入校指南」指向 `/campus-entry`：观众扫码入校登记（二维码暂未开放）+ 到场路线；旧版微信预约填写指南仅管理员可见，入口在账号页按钮 → `/admin/campus-booking`。
 - 干事操作见 `OPS.md`；本地开发与迁移概览见 `README.md`。
+- 观众入校页：`src/app/campus-entry/page.tsx`；旧版预约填写（管理员）：`src/app/admin/campus-booking/page.tsx`。
 
 演出主要信息（修改之前先与用户确认是否有更新）：
 
