@@ -1,8 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 export type AccountActionState = { error?: string; message?: string };
 
@@ -42,8 +42,7 @@ export async function signUpAction(
   if (password.length < 8) return { error: "密碼至少需要 8 個字元。" };
 
   const supabase = await createSupabaseServerClient();
-  const requestHeaders = await headers();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || requestHeaders.get("origin");
+  const siteUrl = getPublicSiteUrl();
   if (!siteUrl) return { error: "註冊設定未完成，請聯絡管理員。" };
   const { data, error } = await supabase.auth.signUp({
     email,

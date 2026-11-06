@@ -3,6 +3,20 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const host = request.headers.get("host") || "";
+  const canonicalSite = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
+  // Keep auth/email callbacks on the custom domain, not ephemeral Netlify deploy hosts.
+  if (
+    canonicalSite &&
+    host.endsWith(".netlify.app") &&
+    !canonicalSite.includes(".netlify.app")
+  ) {
+    const target = new URL(
+      `${pathname}${request.nextUrl.search}`,
+      canonicalSite
+    );
+    return NextResponse.redirect(target, 308);
+  }
   if (
     pathname.startsWith("/admin") &&
     pathname !== "/admin/online-orders" &&

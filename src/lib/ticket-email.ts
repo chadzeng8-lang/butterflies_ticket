@@ -1,3 +1,5 @@
+import { getPublicSiteUrl } from "@/lib/site-url";
+
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => {
     const entities: Record<string, string> = {
@@ -52,7 +54,7 @@ export async function sendTicketIssuedEmail(input: {
 }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const siteUrl = getPublicSiteUrl();
   if (!apiKey || !from || !siteUrl) {
     throw new Error("EMAIL_CONFIG_MISSING");
   }
