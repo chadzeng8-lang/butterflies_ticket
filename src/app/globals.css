@@ -403,18 +403,23 @@ video {
   display: block;
 }
 
-.admin-proof-dialog {
+.admin-proof-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.admin-proof-lightbox-panel {
   width: min(92vw, 720px);
   max-height: 92vh;
-  margin: auto;
-  padding: 0;
+  overflow: auto;
   border: 1px solid var(--line);
   background: #0c0c0c;
   color: var(--ink);
-}
-
-.admin-proof-dialog::backdrop {
-  background: rgba(0, 0, 0, 0.72);
 }
 
 .admin-proof-dialog-bar {
@@ -426,7 +431,7 @@ video {
   border-bottom: 1px solid var(--line);
 }
 
-.admin-proof-dialog img {
+.admin-proof-lightbox-panel img {
   display: block;
   width: 100%;
   max-height: calc(92vh - 3.5rem);

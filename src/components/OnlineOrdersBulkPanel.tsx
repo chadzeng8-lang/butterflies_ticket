@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import {
   bulkDeleteOrdersAction,
   bulkSetOrderStatusAction,
@@ -27,6 +28,11 @@ export type BulkOrderRow = {
   accountEmail: string;
   purchaseNo: number;
   paymentProofUrl: string | null;
+};
+
+type ProofPreview = {
+  url: string;
+  label: string;
 };
 
 export type BulkOrderGroup = {
@@ -67,43 +73,80 @@ function statusBadgeClass(status: OrderStatus): string {
 function ProofThumb({
   url,
   label,
+  onOpen,
 }: {
   url: string | null;
   label: string;
+  onOpen: (preview: ProofPreview) => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   if (!url) {
     return <span className="muted admin-proof-empty">—</span>;
   }
 
   return (
-    <>
-      <button
-        type="button"
-        className="admin-proof-thumb"
-        onClick={() => dialogRef.current?.showModal()}
-        aria-label={`查看${label}付款凭证`}
+    <button
+      type="button"
+      className="admin-proof-thumb"
+      onClick={() => onOpen({ url, label })}
+      aria-label={`查看${label}付款凭证`}
+    >
+      <img src={url} alt="" />
+    </button>
+  );
+}
+
+function ProofLightbox({
+  preview,
+  onClose,
+}: {
+  preview: ProofPreview | null;
+  onClose: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!preview) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [preview, onClose]);
+
+  if (!mounted || !preview) return null;
+
+  return createPortal(
+    <div
+      className="admin-proof-lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${preview.label} 付款凭证`}
+      data-no-translate
+      onClick={onClose}
+    >
+      <div
+        className="admin-proof-lightbox-panel"
+        onClick={(event) => event.stopPropagation()}
       >
-        <img src={url} alt="" />
-      </button>
-      <dialog
-        ref={dialogRef}
-        className="admin-proof-dialog"
-        onClick={(event) => {
-          if (event.target === dialogRef.current) {
-            dialogRef.current.close();
-          }
-        }}
-      >
-        <form method="dialog" className="admin-proof-dialog-bar">
-          <span>{label} 付款凭证</span>
-          <button type="submit" className="btn secondary">
+        <div className="admin-proof-dialog-bar">
+          <span>{preview.label} 付款凭证</span>
+          <button type="button" className="btn secondary" onClick={onClose}>
             关闭
           </button>
-        </form>
-        <img src={url} alt={`${label} 付款凭证`} />
-      </dialog>
-    </>
+        </div>
+        <img src={preview.url} alt={`${preview.label} 付款凭证`} />
+      </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -111,10 +154,12 @@ function OrderSheetRow({
   order,
   checked,
   onToggle,
+  onOpenProof,
 }: {
   order: BulkOrderRow;
   checked: boolean;
   onToggle: (code: string, next: boolean) => void;
+  onOpenProof: (preview: ProofPreview) => void;
 }) {
   const formId = `order-edit-${order.id}`;
   const label = `编号 ${order.purchaseNo}`;
@@ -141,7 +186,11 @@ function OrderSheetRow({
         </span>
       </td>
       <td className="admin-sheet-proof">
-        <ProofThumb url={order.paymentProofUrl} label={label} />
+        <ProofThumb
+          url={order.paymentProofUrl}
+          label={label}
+          onOpen={onOpenProof}
+        />
       </td>
       <td>
         <select
@@ -249,6 +298,7 @@ export function OnlineOrdersBulkPanel({ groups }: { groups: BulkOrderGroup[] }) 
   );
   const [selected, setSelected] = useState<string[]>([]);
   const [bulkStatus, setBulkStatus] = useState<OrderStatus>("issued");
+  const [proofPreview, setProofPreview] = useState<ProofPreview | null>(null);
   const [pending, startTransition] = useTransition();
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
@@ -297,6 +347,10 @@ export function OnlineOrdersBulkPanel({ groups }: { groups: BulkOrderGroup[] }) 
 
   return (
     <div className="admin-sheet-groups">
+      <ProofLightbox
+        preview={proofPreview}
+        onClose={() => setProofPreview(null)}
+      />
       <div className="admin-bulk-bar">
         <label className="admin-bulk-select-all">
           <input
@@ -416,6 +470,7 @@ export function OnlineOrdersBulkPanel({ groups }: { groups: BulkOrderGroup[] }) 
                         order={order}
                         checked={selectedSet.has(order.code)}
                         onToggle={toggleCode}
+                        onOpenProof={setProofPreview}
                       />
                     ))}
                   </tbody>
