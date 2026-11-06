@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import {
   bulkDeleteOrdersAction,
   bulkSetOrderStatusAction,
@@ -26,6 +26,7 @@ export type BulkOrderRow = {
   emailSentAt: string | null;
   accountEmail: string;
   purchaseNo: number;
+  paymentProofUrl: string | null;
 };
 
 export type BulkOrderGroup = {
@@ -63,6 +64,49 @@ function statusBadgeClass(status: OrderStatus): string {
   }
 }
 
+function ProofThumb({
+  url,
+  label,
+}: {
+  url: string | null;
+  label: string;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  if (!url) {
+    return <span className="muted admin-proof-empty">—</span>;
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="admin-proof-thumb"
+        onClick={() => dialogRef.current?.showModal()}
+        aria-label={`查看${label}付款凭证`}
+      >
+        <img src={url} alt="" />
+      </button>
+      <dialog
+        ref={dialogRef}
+        className="admin-proof-dialog"
+        onClick={(event) => {
+          if (event.target === dialogRef.current) {
+            dialogRef.current.close();
+          }
+        }}
+      >
+        <form method="dialog" className="admin-proof-dialog-bar">
+          <span>{label} 付款凭证</span>
+          <button type="submit" className="btn secondary">
+            关闭
+          </button>
+        </form>
+        <img src={url} alt={`${label} 付款凭证`} />
+      </dialog>
+    </>
+  );
+}
+
 function OrderSheetRow({
   order,
   checked,
@@ -95,6 +139,9 @@ function OrderSheetRow({
         <span className={statusBadgeClass(order.status)}>
           {ORDER_STATUS_LABEL[order.status]}
         </span>
+      </td>
+      <td className="admin-sheet-proof">
+        <ProofThumb url={order.paymentProofUrl} label={label} />
       </td>
       <td>
         <select
@@ -353,6 +400,7 @@ export function OnlineOrdersBulkPanel({ groups }: { groups: BulkOrderGroup[] }) 
                         />
                       </th>
                       <th>购票编号</th>
+                      <th>凭证</th>
                       <th>状态</th>
                       <th>手机</th>
                       <th>联系电邮</th>

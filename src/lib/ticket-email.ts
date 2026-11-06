@@ -123,22 +123,21 @@ export async function sendOrderCreatedEmail(input: {
   orderCode: string;
 }): Promise<void> {
   const url = orderUrl(input.orderCode);
-  const code = escapeHtml(input.orderCode);
   const safeUrl = escapeHtml(url);
 
   await sendResendEmail({
     to: input.to,
-    subject: `《蝶》订单已创建 · 请尽快缴付按金 · ${input.orderCode}`,
+    subject: `《蝶》订单已创建 · 请尽快缴付按金`,
     html: emailShell(`
       <p>${greeting(input.buyerName)}</p>
-      <p>你的《蝶》沉浸版展演订单 <strong>${code}</strong> 已创建成功，目前状态为<strong>待付款</strong>。</p>
+      <p>你的《蝶》沉浸版展演订单已创建成功，目前状态为<strong>待付款</strong>。</p>
       <p><strong>下一步请完成：</strong></p>
       <ol>
         <li>打开订单页，按指引缴付按金（¥50 或 HK$60 / 张，到场观演后全额退还）。</li>
         <li>上传付款截图，并点击「我已付款」提交凭证。</li>
         <li>提交后请耐心等待干事核对到账；确认后会再次发信通知出票。</li>
       </ol>
-      <p>订单链接：<br /><a href="${safeUrl}">${safeUrl}</a></p>
+      <p><a href="${safeUrl}">打开订单页</a></p>
       <p>请尽快完成付款。若未在时限内提交，订单可能过期并释放座位。</p>
     `),
   });
@@ -151,22 +150,21 @@ export async function sendPaymentSubmittedEmail(input: {
   orderCode: string;
 }): Promise<void> {
   const url = orderUrl(input.orderCode);
-  const code = escapeHtml(input.orderCode);
   const safeUrl = escapeHtml(url);
 
   await sendResendEmail({
     to: input.to,
-    subject: `《蝶》已收到付款申报 · 等待出票 · ${input.orderCode}`,
+    subject: `《蝶》已收到付款申报 · 等待出票`,
     html: emailShell(`
       <p>${greeting(input.buyerName)}</p>
-      <p>我们已收到你对订单 <strong>${code}</strong> 的付款申报，目前状态为<strong>待确认</strong>。</p>
+      <p>我们已收到你的付款申报，目前状态为<strong>待确认</strong>。</p>
       <p><strong>下一步：</strong></p>
       <ol>
         <li>请耐心等待干事核对到账，无需重复转账。</li>
         <li>审核通过后，系统会发送出票邮件；请同时留意收件箱与垃圾邮件。</li>
         <li>出票后可在订单页或「票夹」查看购票编号。</li>
       </ol>
-      <p>订单链接：<br /><a href="${safeUrl}">${safeUrl}</a></p>
+      <p><a href="${safeUrl}">打开订单页</a></p>
       <p>如长时间未收到出票通知，可登录网站查看订单状态，或联系主办方协助。</p>
     `),
   });
@@ -209,7 +207,7 @@ export async function sendTicketIssuedEmail(input: {
         <li>演出当天提前入场，向工作人员报编号并核对手机号。</li>
         <li>入校预约指南开放后，请按网站「入校指南」完成访客预约。</li>
       </ol>
-      <p>订单链接：<br /><a href="${safeUrl}">${safeUrl}</a></p>
+      <p><a href="${safeUrl}">打开订单页</a></p>
       <p>请妥善保存购票编号与登记手机号；如长时间未在网站看到编号，可联系主办方协助。</p>
     `),
   });

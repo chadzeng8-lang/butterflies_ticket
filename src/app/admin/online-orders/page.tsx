@@ -180,6 +180,23 @@ export default async function OnlineOrdersPage({
     ),
   );
 
+  const proofPaths = [
+    ...new Set(
+      visibleOrders
+        .map((order) => order.payment_proof_path)
+        .filter((path): path is string => Boolean(path)),
+    ),
+  ];
+  const paymentProofUrlByPath = new Map<string, string>();
+  await Promise.all(
+    proofPaths.map(async (path) => {
+      const { data } = await supabase.storage
+        .from("payment-proofs")
+        .createSignedUrl(path, 60 * 60);
+      if (data?.signedUrl) paymentProofUrlByPath.set(path, data.signedUrl);
+    }),
+  );
+
   const bulkGroups: BulkOrderGroup[] = shows.map((show) => {
     const showOrders = visibleOrders
       .filter((order) => order.show_id === show.id)
@@ -208,6 +225,9 @@ export default async function OnlineOrdersPage({
         accountEmail:
           accountEmailByOrderId.get(order.id) || order.contact_extra || "",
         purchaseNo: purchaseNumbers.get(order.id) || 0,
+        paymentProofUrl: order.payment_proof_path
+          ? paymentProofUrlByPath.get(order.payment_proof_path) || null
+          : null,
       })),
     };
   });
