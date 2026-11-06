@@ -1141,6 +1141,47 @@ textarea {
   resize: vertical;
 }
 
+.password-field-control {
+  position: relative;
+  display: block;
+}
+
+.password-field-control input {
+  padding-right: 2.85rem;
+}
+
+.password-visibility-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  display: inline-grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.password-visibility-toggle:hover,
+.password-visibility-toggle[aria-pressed="true"] {
+  color: var(--ink);
+}
+
+.password-visibility-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.password-visibility-toggle svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
 .notice {
   border-radius: var(--radius-sm);
   padding: 0.95rem 1rem;
@@ -1471,7 +1512,8 @@ textarea {
   margin: 0;
   display: grid;
   gap: 0.45rem;
-  justify-items: start;
+  justify-items: center;
+  width: fit-content;
 }
 
 .site-footer-qr a {
@@ -1497,6 +1539,7 @@ textarea {
 .site-footer-qr figcaption {
   color: var(--muted);
   font-size: 0.82rem;
+  text-align: center;
 }
 
 .site-footer-email {

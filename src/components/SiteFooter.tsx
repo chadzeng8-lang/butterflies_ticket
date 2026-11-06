@@ -29,7 +29,7 @@ export function SiteFooter() {
                     height={480}
                   />
                 </a>
-                <figcaption>Instagram · @CUMUSICAL</figcaption>
+                <figcaption>Instagram</figcaption>
               </figure>
               <figure className="site-footer-qr">
                 <a

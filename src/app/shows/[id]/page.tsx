@@ -92,7 +92,11 @@ export default async function ShowPage({
                   公开开票前，管理员可提前登记本场。
                 </p>
               )}
-              <OrderForm showId={show.id} maxQuantity={5} />
+              <OrderForm
+                showId={show.id}
+                maxQuantity={5}
+                accountEmail={user.email || ""}
+              />
             </>
           )}
           <p style={{ marginTop: "1.1rem" }}>

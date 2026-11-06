@@ -7,6 +7,10 @@ import {
   createSupabaseServerClient,
   getSupabaseUser,
 } from "@/lib/supabase/server";
+import {
+  sendOrderCreatedEmail,
+  sendPaymentSubmittedEmail,
+} from "@/lib/ticket-email";
 import { isTicketSaleOpen, ticketSaleClosedMessage } from "@/lib/ticket-sale";
 
 export type ActionState = { error?: string };
@@ -31,13 +35,25 @@ export async function createOrderAction(
     if (!user) redirect(`/account?next=/shows/${formData.get("showId")}`);
 
     const showId = Number(formData.get("showId"));
-    const buyerName = String(formData.get("buyerName") || "");
-    const phone = String(formData.get("phone") || "");
+    const phone = String(formData.get("phone") || "").trim();
+    const contactExtra = String(formData.get("contactExtra") || "")
+      .trim()
+      .toLowerCase();
     const quantity = Number(formData.get("quantity") || "1");
 
-    if (!Number.isInteger(showId) || showId < 1 || !buyerName.trim() || !phone.trim()) {
-      return { error: "请填写姓名与手机号。" };
+    if (!Number.isInteger(showId) || showId < 1 || !phone) {
+      return { error: "请填写手机号。" };
     }
+    if (!contactExtra) {
+      return { error: "请填写邮箱。" };
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle();
+    const buyerName = String(profile?.full_name || "").trim() || "观众";
 
     const isAdmin = await isCurrentUserTicketingAdmin(supabase);
     if (!isTicketSaleOpen() && !isAdmin) {
@@ -48,12 +64,23 @@ export async function createOrderAction(
       p_show_id: showId,
       p_buyer_name: buyerName,
       p_phone: phone,
-      p_contact_extra: user.email || "",
+      p_contact_extra: contactExtra,
       p_quantity: quantity,
     });
     if (error) throw new Error(error.message);
     const result = Array.isArray(data) ? data[0] : data;
     if (!result?.order_code) throw new Error("ORDER_CREATE_FAILED");
+
+    try {
+      await sendOrderCreatedEmail({
+        to: contactExtra,
+        buyerName,
+        orderCode: String(result.order_code),
+      });
+    } catch {
+      // 邮件失败不阻断下单；用户仍可在订单页完成付款。
+    }
+
     revalidatePath("/");
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
@@ -89,7 +116,7 @@ export async function markPaidAction(
 
     const { data: ownedOrder, error: orderLookupError } = await supabase
       .from("orders")
-      .select("code")
+      .select("code, buyer_name, contact_extra")
       .eq("code", code)
       .maybeSingle();
     if (orderLookupError) throw new Error("ORDER_LOOKUP_FAILED");
@@ -121,6 +148,21 @@ export async function markPaidAction(
       }
       throw new Error(error.message);
     }
+
+    const mailTo =
+      String(ownedOrder.contact_extra || "").trim() || user.email || "";
+    if (mailTo) {
+      try {
+        await sendPaymentSubmittedEmail({
+          to: mailTo,
+          buyerName: String(ownedOrder.buyer_name || "").trim() || "观众",
+          orderCode: code,
+        });
+      } catch {
+        // 邮件失败不阻断付款申报。
+      }
+    }
+
     revalidatePath(`/orders/${code}`);
     revalidatePath("/admin");
     revalidatePath("/admin/orders");

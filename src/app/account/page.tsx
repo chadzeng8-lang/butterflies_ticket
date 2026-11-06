@@ -28,6 +28,7 @@ export default async function AccountPage({
   const supabase = await createSupabaseServerClient();
   const user = await getSupabaseUser(supabase);
   let isAdmin = false;
+  let nickname = "";
   let orderCount = 0;
   let ticketCount = 0;
   let latestOrder: {
@@ -39,11 +40,12 @@ export default async function AccountPage({
   if (user) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, full_name")
       .eq("id", user.id)
       .maybeSingle();
     if (profileError) throw new Error("PROFILE_LOOKUP_FAILED");
     isAdmin = profile?.role === "admin";
+    nickname = String(profile?.full_name || "").trim();
     const records = await listSupabaseOrdersForCurrentUser();
     orderCount = records.length;
     ticketCount = records.reduce((total, record) => total + record.tickets.length, 0);
@@ -71,8 +73,7 @@ export default async function AccountPage({
     <main className="shell shell-narrow">
       <SiteHeader />
       <section className="hero">
-        <h1>我的账号</h1>
-        <p>查看账号关联的演出票券与《蝶》角色人格结果。</p>
+        <h1>{user ? `你好，${nickname || "朋友"}` : "我的账号"}</h1>
       </section>
       {user ? (
         <div className="grid">

@@ -7,6 +7,7 @@ import {
   type AccountActionState,
 } from "@/app/actions/account";
 import { BusyButton } from "@/components/BusyButton";
+import { PasswordField } from "@/components/PasswordField";
 
 const initialState: AccountActionState = {};
 
@@ -24,16 +25,11 @@ export function AccountForm({ nextPath }: { nextPath: string }) {
             電郵
             <input name="email" type="email" required autoComplete="email" disabled={signingIn} />
           </label>
-          <label>
-            密碼
-            <input
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              disabled={signingIn}
-            />
-          </label>
+          <PasswordField
+            label="密碼"
+            autoComplete="current-password"
+            disabled={signingIn}
+          />
           {signInState.error && <div className="error">{signInState.error}</div>}
           <BusyButton pending={signingIn} pendingLabel="登入中…">
             登入
@@ -47,24 +43,19 @@ export function AccountForm({ nextPath }: { nextPath: string }) {
         <form action={signUp} className="form" aria-busy={signingUp}>
           <input type="hidden" name="next" value={nextPath} />
           <label>
-            姓名
-            <input name="fullName" required autoComplete="name" disabled={signingUp} />
+            昵称
+            <input name="fullName" required autoComplete="nickname" disabled={signingUp} />
           </label>
           <label>
             電郵
             <input name="email" type="email" required autoComplete="email" disabled={signingUp} />
           </label>
-          <label>
-            密碼（至少 8 個字元）
-            <input
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              disabled={signingUp}
-            />
-          </label>
+          <PasswordField
+            label="密碼（至少 8 個字元）"
+            minLength={8}
+            autoComplete="new-password"
+            disabled={signingUp}
+          />
           {signUpState.error && <div className="error">{signUpState.error}</div>}
           {signUpState.message && (
             <div className="success" role="status">

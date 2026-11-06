@@ -37,7 +37,7 @@ export async function signUpAction(
   const fullName = String(formData.get("fullName") || "").trim();
   const nextPath = getSafeNextPath(formData.get("next"));
   if (!email || !password || !fullName) {
-    return { error: "請填寫姓名、電郵及密碼。" };
+    return { error: "請填寫暱稱、電郵及密碼。" };
   }
   if (password.length < 8) return { error: "密碼至少需要 8 個字元。" };
 
