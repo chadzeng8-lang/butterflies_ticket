@@ -8,12 +8,11 @@ export async function SiteHeader() {
   let isAdmin = false;
 
   if (user) {
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
-    if (error) throw new Error("HEADER_PROFILE_LOOKUP_FAILED");
     isAdmin = profile?.role === "admin";
   }
 

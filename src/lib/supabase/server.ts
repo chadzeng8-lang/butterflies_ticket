@@ -27,8 +27,12 @@ export async function createSupabaseServerClient() {
 export async function getSupabaseUser(
   supabase: SupabaseClient
 ): Promise<User | null> {
-  const { data, error } = await supabase.auth.getUser();
-  if (error?.name === "AuthSessionMissingError") return null;
-  if (error) throw new Error("AUTH_LOOKUP_FAILED");
-  return data.user;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    // 过期 / 无效 cookie 等鉴权错误一律视为未登录，避免整站 500
+    if (error || !data.user) return null;
+    return data.user;
+  } catch {
+    return null;
+  }
 }

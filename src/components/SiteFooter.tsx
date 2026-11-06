@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { FooterWechatQr } from "@/components/FooterWechatQr";
 
 export function SiteFooter() {
   return (
@@ -18,6 +19,7 @@ export function SiteFooter() {
             <div className="site-footer-qrs">
               <figure className="site-footer-qr">
                 <a
+                  className="site-footer-qr-frame"
                   href="https://www.instagram.com/cumusical?srtk=MWFmYzk4cTV3NndyZw%3D%3D&utm_source=qr"
                   target="_blank"
                   rel="noreferrer"
@@ -33,6 +35,7 @@ export function SiteFooter() {
               </figure>
               <figure className="site-footer-qr">
                 <a
+                  className="site-footer-qr-frame"
                   href="https://www.xiaohongshu.com/user/profile/6664513e0000000007006eca?xhsshare=userQrCode&exSource="
                   target="_blank"
                   rel="noreferrer"
@@ -45,6 +48,10 @@ export function SiteFooter() {
                   />
                 </a>
                 <figcaption>小红书</figcaption>
+              </figure>
+              <figure className="site-footer-qr">
+                <FooterWechatQr />
+                <figcaption>微信公众号</figcaption>
               </figure>
             </div>
           </section>

@@ -75,9 +75,11 @@ export function TicketOrderList({ orders }: { orders: TicketOrderView[] }) {
           <article className="card ticket-order" key={order.id}>
             <div className="row" style={{ justifyContent: "space-between" }}>
               <div>
-                <p className="eyebrow">{issued ? "购票编号" : "订单"}</p>
+                <p className="eyebrow">
+                  {order.purchaseNo ? "购票编号" : "订单状态"}
+                </p>
                 <h2 className="order-code">
-                  {issued && order.purchaseNo ? order.purchaseNo : order.code}
+                  {order.purchaseNo ? order.purchaseNo : label}
                 </h2>
               </div>
               <span className={statusBadgeClass(statusKey)}>{label}</span>

@@ -102,8 +102,7 @@ export async function lookupTicketsAction(
           quantity: order.quantity,
           total: centsToCny(order.ticketTotalCents + order.depositTotalCents),
           phone: order.phone,
-          purchaseNo:
-            issuedTickets.length > 0 ? purchaseNumbers.get(order.id) || null : null,
+          purchaseNo: purchaseNumbers.get(order.id) || null,
           tickets: issuedTickets,
         };
       }),
@@ -153,8 +152,7 @@ export async function lookupTicketsAction(
         quantity: order.quantity,
         total: centsToCny(order.ticket_total_cents + order.deposit_total_cents),
         phone: info?.phone || (looksLikeEmail ? "" : contact),
-        purchaseNo:
-          issuedTickets.length > 0 ? Number(info?.purchase_no) || null : null,
+        purchaseNo: Number(info?.purchase_no) || null,
         tickets: issuedTickets,
       };
     }),

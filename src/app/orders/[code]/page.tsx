@@ -37,10 +37,11 @@ export default async function OrderPage({
     order.status === "checked_in" ||
     order.status === "deposit_refunded";
   const tickets = issued ? supabaseRecord.tickets : [];
-  const purchaseNumbers = issued
-    ? await loadPurchaseNumbersForShows([order.showId])
-    : new Map<number, number>();
+  const purchaseNumbers = await loadPurchaseNumbersForShows([order.showId]);
   const purchaseNo = purchaseNumbers.get(order.id) || null;
+  const heroTitle = purchaseNo
+    ? `购票编号 ${purchaseNo}`
+    : ORDER_STATUS_LABEL[order.status];
 
   return (
     <main className="shell shell-narrow">
@@ -50,7 +51,7 @@ export default async function OrderPage({
           <span className="chip-tag">订单</span>
           {ORDER_STATUS_LABEL[order.status]}
         </div>
-        <h1>{issued && purchaseNo ? `购票编号 ${purchaseNo}` : order.code}</h1>
+        <h1>{heroTitle}</h1>
         <p>
           {formatShowTime(order.showStartsAt)} · {order.showVenue}
         </p>
@@ -120,7 +121,7 @@ export default async function OrderPage({
                 {show.paymentNote}
               </p>
             )}
-            <PaymentMethods quantity={order.quantity} orderCode={order.code} />
+            <PaymentMethods quantity={order.quantity} phone={order.phone} />
             <div style={{ marginTop: "1.1rem" }}>
               <MarkPaidForm code={order.code} />
             </div>
@@ -131,7 +132,7 @@ export default async function OrderPage({
           <article className="panel">
             <h2>等待确认</h2>
             <p className="muted">
-              你已提交付款申报。干事确认到账后会发放购票编号，请勿重复转账。
+              你已提交付款申报。干事确认到账后会正式出票，请勿重复转账。
             </p>
           </article>
         )}

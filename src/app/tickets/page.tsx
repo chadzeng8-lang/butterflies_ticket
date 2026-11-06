@@ -37,7 +37,7 @@ export default async function TicketsPage() {
         quantity: order.quantity,
         total: centsToCny(order.ticketTotalCents + order.depositTotalCents),
         phone: order.phone,
-        purchaseNo: issued ? purchaseNumbers.get(order.id) || null : null,
+        purchaseNo: purchaseNumbers.get(order.id) || null,
         tickets: issued
           ? tickets.map((ticket) => ({
               code: ticket.code,
