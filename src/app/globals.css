@@ -1422,6 +1422,34 @@ textarea {
   padding: 0.5rem;
 }
 
+.ticket-entry-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem 0 0.2rem;
+}
+
+.ticket-entry-number {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 12vw, 4.5rem);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket-entry-note,
+.ticket-order .ticket-entry-note {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ticket-order .ticket-entry-note {
+  padding: 0.85rem 0 0;
+  border-top: 1px solid var(--line);
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;

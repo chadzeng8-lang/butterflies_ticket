@@ -3,11 +3,10 @@ import { signOutAction } from "@/app/actions/account";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TicketLookupForm } from "@/components/TicketLookupForm";
 import { TicketOrderList, type TicketOrderView } from "@/components/TicketOrderList";
+import { centsToCny } from "@/lib/money";
 import { createSupabaseServerClient, getSupabaseUser } from "@/lib/supabase/server";
 import { listSupabaseOrdersForCurrentUser } from "@/lib/supabase/orders";
-import { centsToCny } from "@/lib/money";
-import { toDataUrl } from "@/lib/qr";
-import { signTicketCode } from "@/lib/ticket-token";
+import { loadPurchaseNumbersForShows } from "@/lib/supabase/purchase-numbers";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +18,15 @@ export default async function TicketsPage() {
 
   if (user) {
     const records = await listSupabaseOrdersForCurrentUser();
-    orders = await Promise.all(
-      records.map(async ({ order, tickets }) => ({
+    const purchaseNumbers = await loadPurchaseNumbersForShows(
+      records.map(({ order }) => order.showId),
+    );
+    orders = records.map(({ order, tickets }) => {
+      const issued =
+        order.status === "issued" ||
+        order.status === "checked_in" ||
+        order.status === "deposit_refunded";
+      return {
         id: order.id,
         code: order.code,
         statusKey: order.status,
@@ -30,19 +36,20 @@ export default async function TicketsPage() {
         showVenue: order.showVenue,
         quantity: order.quantity,
         total: centsToCny(order.ticketTotalCents + order.depositTotalCents),
-        tickets: await Promise.all(
-          tickets.map(async (ticket) => ({
-            code: ticket.code,
-            status: ticket.depositRefundedAt
-              ? "按金已退"
-              : ticket.checkedInAt
-                ? "已核销"
-                : "待核销",
-            dataUrl: await toDataUrl(signTicketCode(ticket.code)),
-          }))
-        ),
-      }))
-    );
+        phone: order.phone,
+        purchaseNo: issued ? purchaseNumbers.get(order.id) || null : null,
+        tickets: issued
+          ? tickets.map((ticket) => ({
+              code: ticket.code,
+              status: ticket.depositRefundedAt
+                ? "按金已退"
+                : ticket.checkedInAt
+                  ? "已核销"
+                  : "待核销",
+            }))
+          : [],
+      };
+    });
   }
 
   return (
@@ -52,7 +59,7 @@ export default async function TicketsPage() {
         <h1>票夹</h1>
         <p>
           {user
-            ? `已登录 ${user.email}，以下为关联到此账号的订单与电子票。`
+            ? `已登录 ${user.email}，以下为关联到此账号的订单与购票编号。`
             : "登录账号查看关联订单，或输入购票姓名及下单时使用的手机号码或电邮找回订单。"}
         </p>
       </section>
@@ -75,7 +82,7 @@ export default async function TicketsPage() {
         <div className="grid">
           <article className="panel">
             <h2>登录查看账号订单</h2>
-            <p className="muted">登录后可直接查看关联到账号的订单与电子票。</p>
+            <p className="muted">登录后可直接查看关联到账号的订单与购票编号。</p>
             <Link className="btn" href="/account?next=%2Ftickets">登录或注册</Link>
           </article>
           <article className="panel">

@@ -12,10 +12,11 @@ export type TicketOrderView = {
   showVenue: string;
   quantity: number;
   total: string;
+  phone: string;
+  purchaseNo: number | null;
   tickets: Array<{
     code: string;
     status: string;
-    dataUrl: string;
   }>;
 };
 
@@ -68,13 +69,16 @@ export function TicketOrderList({ orders }: { orders: TicketOrderView[] }) {
         const statusKey = order.statusKey;
         const label = order.status || ORDER_STATUS_LABEL[statusKey];
         const note = emptyTicketNote(statusKey);
+        const issued = order.tickets.length > 0;
 
         return (
           <article className="card ticket-order" key={order.id}>
             <div className="row" style={{ justifyContent: "space-between" }}>
               <div>
-                <p className="eyebrow">订单编号</p>
-                <h2 className="order-code">{order.code}</h2>
+                <p className="eyebrow">{issued ? "购票编号" : "订单"}</p>
+                <h2 className="order-code">
+                  {issued && order.purchaseNo ? order.purchaseNo : order.code}
+                </h2>
               </div>
               <span className={statusBadgeClass(statusKey)}>{label}</span>
             </div>
@@ -86,17 +90,25 @@ export function TicketOrderList({ orders }: { orders: TicketOrderView[] }) {
               <span>
                 {order.quantity} 张 · 应付 {order.total}
               </span>
+              {order.phone ? <span>登记手机 {order.phone}</span> : null}
             </div>
             <Link href={`/orders/${order.code}`}>查看订单详情</Link>
-            {order.tickets.length > 0 ? (
-              <div className="ticket-result-grid" style={{ marginTop: "1rem" }}>
-                {order.tickets.map((ticket) => (
-                  <div className="ticket" key={ticket.code}>
-                    <h3>{ticket.code}</h3>
-                    <img src={ticket.dataUrl} alt={`电子票 ${ticket.code} 二维码`} />
-                    <p className="muted">{ticket.status}</p>
-                  </div>
-                ))}
+            {issued ? (
+              <div className="ticket-entry-note" style={{ marginTop: "1rem" }}>
+                <p>
+                  入场时请出示购票编号
+                  {order.purchaseNo ? (
+                    <>
+                      {" "}
+                      <strong>{order.purchaseNo}</strong>
+                    </>
+                  ) : null}
+                  ，并核对手机号 <strong>{order.phone || "登记手机"}</strong>
+                  ，无需出示二维码。
+                </p>
+                {order.tickets.length > 1 ? (
+                  <p className="muted">本单一共 {order.tickets.length} 张，共用同一购票编号。</p>
+                ) : null}
               </div>
             ) : (
               <p className={note.tone}>{note.text}</p>

@@ -4,14 +4,13 @@ import { MarkPaidForm } from "@/components/MarkPaidForm";
 import { PaymentMethods } from "@/components/PaymentMethods";
 import { SiteHeader } from "@/components/SiteHeader";
 import { isCurrentUserTicketingAdmin } from "@/lib/admin";
-import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { depositAmounts } from "@/lib/payment-methods";
 import { depositPerPersonLabel } from "@/lib/pricing-copy";
-import { toDataUrl } from "@/lib/qr";
+import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
+import { loadPurchaseNumbersForShows } from "@/lib/supabase/purchase-numbers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { signTicketCode } from "@/lib/ticket-token";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -33,20 +32,15 @@ export default async function OrderPage({
 
   const total = order.ticketTotalCents + order.depositTotalCents;
   const depositBoth = depositAmounts(order.quantity);
-  const tickets = order.status === "issued" ||
+  const issued =
+    order.status === "issued" ||
     order.status === "checked_in" ||
-    order.status === "deposit_refunded"
-    ? supabaseRecord.tickets
-    : [];
-
-  const ticketQrs = await Promise.all(
-    tickets.map(async (t) => ({
-      code: t.code,
-      checkedInAt: t.checkedInAt,
-      depositRefundedAt: t.depositRefundedAt,
-      dataUrl: await toDataUrl(signTicketCode(t.code)),
-    }))
-  );
+    order.status === "deposit_refunded";
+  const tickets = issued ? supabaseRecord.tickets : [];
+  const purchaseNumbers = issued
+    ? await loadPurchaseNumbersForShows([order.showId])
+    : new Map<number, number>();
+  const purchaseNo = purchaseNumbers.get(order.id) || null;
 
   return (
     <main className="shell shell-narrow">
@@ -56,7 +50,7 @@ export default async function OrderPage({
           <span className="chip-tag">订单</span>
           {ORDER_STATUS_LABEL[order.status]}
         </div>
-        <h1>{order.code}</h1>
+        <h1>{issued && purchaseNo ? `购票编号 ${purchaseNo}` : order.code}</h1>
         <p>
           {formatShowTime(order.showStartsAt)} · {order.showVenue}
         </p>
@@ -84,7 +78,7 @@ export default async function OrderPage({
           </div>
           <div className="meta" style={{ marginTop: "0.75rem" }}>
             <span>
-              {order.buyerName} · {order.phone} · {order.quantity} 张
+              {order.phone} · {order.quantity} 张
             </span>
             <span>
               {order.ticketTotalCents === 0
@@ -137,38 +131,24 @@ export default async function OrderPage({
           <article className="panel">
             <h2>等待确认</h2>
             <p className="muted">
-              你已提交付款申报（订单号 {order.code}）。干事确认到账后会发放电子票，请勿重复转账。
+              你已提交付款申报。干事确认到账后会发放购票编号，请勿重复转账。
             </p>
           </article>
         )}
 
-        {ticketQrs.length > 0 && (
+        {tickets.length > 0 && (
           <article className="panel">
-            <h2>电子票</h2>
-            <p className="muted">
-              入场出示二维码。现场核销后，工作人员将全额退还每人按金 {depositPerPersonLabel()}。
-            </p>
-            <div className="grid" style={{ marginTop: "1rem" }}>
-              {ticketQrs.map((t, idx) => (
-                <div key={t.code} className="ticket card" style={{ boxShadow: "none" }}>
-                  <h3>
-                    第 {idx + 1} 张 · {t.code}
-                  </h3>
-                  <img src={t.dataUrl} alt={`票 ${t.code}`} />
-                  <div className="meta" style={{ marginTop: "0.5rem" }}>
-                    {t.checkedInAt ? (
-                      <span>已核销</span>
-                    ) : (
-                      <span>待核销</span>
-                    )}
-                    {t.depositRefundedAt ? (
-                      <span>按金已退</span>
-                    ) : (
-                      <span>按金待退 {depositPerPersonLabel()}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <h2>入场凭证</h2>
+            <div className="ticket-entry-card">
+              <p className="eyebrow">购票编号</p>
+              <p className="ticket-entry-number">{purchaseNo || "—"}</p>
+              <p>
+                共 {order.quantity} 张 · 登记手机 <strong>{order.phone}</strong>
+              </p>
+              <p className="ticket-entry-note">
+                入场时请向工作人员报购票编号，并核对手机号；无需出示二维码。到场观演后按金
+                {depositPerPersonLabel()}全额退还。
+              </p>
             </div>
           </article>
         )}

@@ -164,7 +164,7 @@ export async function sendPaymentSubmittedEmail(input: {
       <ol>
         <li>请耐心等待干事核对到账，无需重复转账。</li>
         <li>审核通过后，系统会发送出票邮件；请同时留意收件箱与垃圾邮件。</li>
-        <li>出票后可在订单页或「票夹」查看电子票。</li>
+        <li>出票后可在订单页或「票夹」查看购票编号。</li>
       </ol>
       <p>订单链接：<br /><a href="${safeUrl}">${safeUrl}</a></p>
       <p>如长时间未收到出票通知，可登录网站查看订单状态，或联系主办方协助。</p>
@@ -177,25 +177,40 @@ export async function sendTicketIssuedEmail(input: {
   to: string;
   buyerName: string;
   orderCode: string;
+  purchaseNo?: number | null;
+  phone?: string;
+  quantity?: number;
 }): Promise<void> {
   const url = orderUrl(input.orderCode);
-  const code = escapeHtml(input.orderCode);
   const safeUrl = escapeHtml(url);
+  const purchaseNo =
+    typeof input.purchaseNo === "number" && input.purchaseNo > 0
+      ? String(input.purchaseNo)
+      : null;
+  const phone = escapeHtml((input.phone || "").trim() || "登记手机号");
+  const quantity = input.quantity && input.quantity > 0 ? input.quantity : 1;
 
   await sendResendEmail({
     to: input.to,
-    subject: `《蝶》电子票已出票 · ${input.orderCode}`,
+    subject: purchaseNo
+      ? `《蝶》已出票 · 购票编号 ${purchaseNo}`
+      : `《蝶》已出票 · 请核对购票编号`,
     html: emailShell(`
       <p>${greeting(input.buyerName)}</p>
-      <p>你的《蝶》订单 <strong>${code}</strong> 已确认并出票。</p>
+      <p>你的《蝶》沉浸版展演订单已确认并<strong>出票</strong>${
+        purchaseNo
+          ? `，购票编号为 <strong style="font-size:1.4em;">${escapeHtml(purchaseNo)}</strong>`
+          : ""
+      }（共 ${quantity} 张）。</p>
+      <p><strong>入场方式：</strong>现场核对接购票编号与手机号 <strong>${phone}</strong>，无需出示二维码。</p>
       <p><strong>下一步：</strong></p>
       <ol>
-        <li>登录购票账号，在订单页或「票夹」查看电子票。</li>
-        <li>演出当天按场次时间提前入场，并携带可出示电子票的设备。</li>
+        <li>打开订单页或「票夹」，核对购票编号与登记手机号。</li>
+        <li>演出当天提前入场，向工作人员报编号并核对手机号。</li>
         <li>入校预约指南开放后，请按网站「入校指南」完成访客预约。</li>
       </ol>
-      <p>电子票链接：<br /><a href="${safeUrl}">${safeUrl}</a></p>
-      <p>请勿转发此邮件中的订单链接。</p>
+      <p>订单链接：<br /><a href="${safeUrl}">${safeUrl}</a></p>
+      <p>请妥善保存购票编号与登记手机号；如长时间未在网站看到编号，可联系主办方协助。</p>
     `),
   });
 }

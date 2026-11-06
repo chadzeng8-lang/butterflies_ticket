@@ -2,10 +2,9 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { centsToCny } from "@/lib/money";
-import { toDataUrl } from "@/lib/qr";
-import { signTicketCode } from "@/lib/ticket-token";
 import { ORDER_STATUS_LABEL, type OrderStatus } from "@/lib/types";
 import { listSupabaseOrdersForCurrentUser } from "@/lib/supabase/orders";
+import { loadPurchaseNumbersForShows } from "@/lib/supabase/purchase-numbers";
 
 type GuestTicketLookupRow = {
   id: number;
@@ -36,13 +35,37 @@ export type TicketLookupState = {
     showVenue: string;
     quantity: number;
     total: string;
+    phone: string;
+    purchaseNo: number | null;
     tickets: Array<{
       code: string;
       status: string;
-      dataUrl: string;
     }>;
   }>;
 };
+
+function mapIssuedTickets(
+  status: OrderStatus,
+  tickets: Array<{
+    code: string;
+    checked_in_at?: string | null;
+    deposit_refunded_at?: string | null;
+    checkedInAt?: string | null;
+    depositRefundedAt?: string | null;
+  }>,
+) {
+  const issued =
+    status === "issued" || status === "checked_in" || status === "deposit_refunded";
+  if (!issued) return [];
+  return tickets.map((ticket) => {
+    const refunded = ticket.deposit_refunded_at || ticket.depositRefundedAt;
+    const checked = ticket.checked_in_at || ticket.checkedInAt;
+    return {
+      code: ticket.code,
+      status: refunded ? "按金已退" : checked ? "已核销" : "待核销",
+    };
+  });
+}
 
 export async function lookupTicketsAction(
   _previousState: TicketLookupState,
@@ -62,9 +85,13 @@ export async function lookupTicketsAction(
 
   const accountOrders = await listSupabaseOrdersForCurrentUser();
   if (accountOrders.length > 0) {
+    const purchaseNumbers = await loadPurchaseNumbersForShows(
+      accountOrders.map(({ order }) => order.showId),
+    );
     return {
-      orders: await Promise.all(
-        accountOrders.map(async ({ order, tickets }) => ({
+      orders: accountOrders.map(({ order, tickets }) => {
+        const issuedTickets = mapIssuedTickets(order.status, tickets);
+        return {
           id: order.id,
           code: order.code,
           statusKey: order.status,
@@ -74,19 +101,12 @@ export async function lookupTicketsAction(
           showVenue: order.showVenue,
           quantity: order.quantity,
           total: centsToCny(order.ticketTotalCents + order.depositTotalCents),
-          tickets: await Promise.all(
-            tickets.map(async (ticket) => ({
-              code: ticket.code,
-              status: ticket.depositRefundedAt
-                ? "按金已退"
-                : ticket.checkedInAt
-                  ? "已核销"
-                  : "待核销",
-              dataUrl: await toDataUrl(signTicketCode(ticket.code)),
-            }))
-          ),
-        }))
-      ),
+          phone: order.phone,
+          purchaseNo:
+            issuedTickets.length > 0 ? purchaseNumbers.get(order.id) || null : null,
+          tickets: issuedTickets,
+        };
+      }),
     };
   }
 
@@ -107,9 +127,22 @@ export async function lookupTicketsAction(
     return { error: "未找到符合資料的訂單，請確認姓名及完整手機號碼或電郵地址。" };
   }
 
+  const { data: infoRows } = await supabase.rpc("get_orders_purchase_info", {
+    p_order_ids: orders.map((order) => order.id),
+  });
+  const infoById = new Map(
+    ((infoRows || []) as Array<{
+      order_id: number;
+      phone: string;
+      purchase_no: number;
+    }>).map((row) => [Number(row.order_id), row]),
+  );
+
   return {
-    orders: await Promise.all(
-      orders.map(async (order) => ({
+    orders: orders.map((order) => {
+      const issuedTickets = mapIssuedTickets(order.status, order.tickets);
+      const info = infoById.get(order.id);
+      return {
         id: order.id,
         code: order.code,
         statusKey: order.status,
@@ -119,18 +152,11 @@ export async function lookupTicketsAction(
         showVenue: order.show_venue,
         quantity: order.quantity,
         total: centsToCny(order.ticket_total_cents + order.deposit_total_cents),
-        tickets: await Promise.all(
-          order.tickets.map(async (ticket) => ({
-            code: ticket.code,
-            status: ticket.deposit_refunded_at
-              ? "按金已退"
-              : ticket.checked_in_at
-                ? "已核销"
-                : "待核销",
-            dataUrl: await toDataUrl(signTicketCode(ticket.code)),
-          }))
-        ),
-      }))
-    ),
+        phone: info?.phone || (looksLikeEmail ? "" : contact),
+        purchaseNo:
+          issuedTickets.length > 0 ? Number(info?.purchase_no) || null : null,
+        tickets: issuedTickets,
+      };
+    }),
   };
 }

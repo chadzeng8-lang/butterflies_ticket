@@ -54,7 +54,7 @@ async function deliverTicketEmail(
 ) {
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("buyer_name, contact_extra, status")
+    .select("id, show_id, buyer_name, phone, contact_extra, quantity, status, created_at")
     .eq("code", code)
     .maybeSingle();
   if (orderError) redirect("/admin/online-orders?error=email_order_lookup");
@@ -66,11 +66,23 @@ async function deliverTicketEmail(
     redirect("/admin/online-orders?error=email_recipient_missing");
   }
 
+  let purchaseNo: number | null = null;
+  const { loadPurchaseNumbersForShows } = await import(
+    "@/lib/supabase/purchase-numbers"
+  );
+  purchaseNo =
+    (await loadPurchaseNumbersForShows([Number(order.show_id)])).get(
+      Number(order.id),
+    ) || null;
+
   try {
     await sendTicketIssuedEmail({
       to: order.contact_extra,
       buyerName: order.buyer_name,
       orderCode: code,
+      purchaseNo,
+      phone: order.phone,
+      quantity: order.quantity,
     });
   } catch (error) {
     const code =
