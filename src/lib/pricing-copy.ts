@@ -18,7 +18,11 @@ export function audiencePricingSummary(ticketPriceCents: number, depositCents: n
 }
 
 export function depositRuleNotice(): string {
-  return `公益演出不收票价，仅预收按金 ${depositPerPersonLabel()}/人。到场核对接购票编号与手机号后，按金全额退还；未到场不退还。转账时请务必备注登记手机号。`;
+  return `公益演出不收票价，仅预收按金 ${depositPerPersonLabel()}/人。到场核对购票编号与手机号后，按金全额退还；未到场不退还。转账时请务必备注购票编号及手机号。`;
+}
+
+export function paymentTransferNote(): string {
+  return `公益演出仅收按金 ${depositPerPersonLabel()}/人，到场全额退还。可用微信 / 支付宝转账，备注填写购票编号及手机号。`;
 }
 
 export function depositGuideCopy(): string {

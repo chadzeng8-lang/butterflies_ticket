@@ -8,7 +8,7 @@
 - 技术栈：Next.js 15 App Router、React 19、TypeScript、Supabase Auth/Postgres/Storage、Resend
 - 线上站点：<https://cumusical.xyz>
 - 发布平台：Netlify，`main` 分支推送会触发生产构建与部署
-- 最近代码版本：`97a3542`（`Fix homepage booking and site branding`）；Netlify 曾显示此版本为 Published
+- 最近代码版本：`a393133`（`Ship sale reopen, audience rules, WeChat group CTA, and load fixes`）；2026-11-06 已推送并在生产页确认开票时间与场次说明已更新
 - 用户于 2026-11-05 确认：更新生产 `EMAIL_FROM` 后手动重新部署成功
 
 ## 当前状态与接手事项
@@ -16,14 +16,22 @@
 - 首页以故事 / 关于 / 剧照时间线 / 演职为主（编号 01–04）；购票相关（报名步骤、地图、场次列表、观演须知）在 `/shows`。首页 CTA 与导航「购票」都指向 `/shows`。
 - 左上角品牌文字由 `src/lib/site.ts` 的 `SITE_NAME` 控制，不再读取 Netlify 自动生成的站点名。
 - 用户要求延续参考 Strand 的简洁视觉、减少大圆角；全站支持简繁切换。
+- 页脚「关注」：Instagram / 小红书 / 微信公众号二维码点击放大；有网页主页的平台在缩略图下与弹窗内显示链接（`FooterQrZoom`）。
+- 下单后订单页展示微信观演群二维码（`OrderWechatGroup`，图在 `public/images/wechat-audience-group.jpg`）；群邀请码会过期，失效后替换同路径图片即可。下单邮件也会提示扫码入群。
+- 场次开放对象文案集中在 `src/lib/show-audience.ts`；场次列表用暗红色强调，首页场次说明为两行普通色。
 - Resend 组织 team 已完成 `cumusical.xyz` 域名验证，DKIM/SPF 状态曾确认通过。阿里云 DNS 的 Resend 验证 TXT 已添加，`resend._domainkey` TXT 已替换为组织 team 的 DKIM 值；不要恢复个人 team 的旧 DKIM 值或删除验证记录。
 - 用户确认已在 Netlify 设置生产环境 `EMAIL_FROM` 为该已验证域名下的发件地址，并手动重新部署成功。不要在文档、聊天、截图或代码中记录/显示其具体地址或其他环境变量值。
 - 事务邮件：`src/lib/ticket-email.ts` 含下单引导付款、提交付款后等待出票、审核出票三封；均以“本邮件由系统自动发送，请勿直接回复。”开头。下单/付款邮件失败不阻断流程；出票邮件失败可在管理端重发。
 - 出票后对用户展示「购票编号」（每场从 1 起），不展示票码/二维码；入场核对编号与手机号。编号计算见 `get_order_purchase_numbers`（迁移 `20261106120000_order_purchase_numbers.sql`）。
+- 转账备注为**购票编号及手机号**（不是旧订单号）；订单联系手机默认取首位观众电话。购票编号在下单后即可按场次顺序计算，付款页会同时展示编号与手机。
+- 入校政策观众信息：每位观众姓名 / 电话 / 证件号（内地身份证或香港回乡证），报名时填写，不参与付款确认；订单详情可编辑。表 `order_attendees`，迁移 `20261106160000_order_attendees.sql`，RPC `save_order_attendees`。
+- 导航「入校指南」对普通用户暂未开放；管理员可见 `/campus-entry`。
+- 干事操作见 `OPS.md`；本地开发与迁移概览见 `README.md`。
 
 演出主要信息（修改之前先与用户确认是否有更新）：
 
-- 演出：音乐剧《蝶》学生版，2026-11-21 至 2026-11-22，香港中文大学（深圳）时光胶囊黑匣子，普通话，约 150 分钟。11.21 面向公众人士；11.22 仅开放给香港中文大学及香港中文大学（深圳）的同学及教职工。
+- 演出：音乐剧《蝶》学生版，2026-11-21 至 2026-11-22，香港中文大学（深圳）时光胶囊黑匣子，普通话，约 150 分钟。
+- 11.21 面向公众人士；11.22 仅开放给香港中文大学及香港中文大学（深圳）的同学及教职工（展示提示，报名不强制校验身份）。
 - 公益免费入场，每张票需缴 ¥50 或 HK$60 按金，到场观演后全额退还。
 - 开票时间：2026-11-09 20:00（香港时间），由 `src/lib/ticket-sale.ts` 控制；普通用户未到点不可登记。管理员登录后可无视开票时间直接在 `/shows` 报名。
 - 人格测试共 24 题。
@@ -48,17 +56,22 @@ git diff --check
 git status --short
 ```
 
-不要删除或覆盖他人尚未提交的工作。不要提交 `.env.local`、密钥、真实用户资料或付款截图。
+不要删除或覆盖他人尚未提交的工作。不要提交 `.env.local`、密钥、真实用户资料或付款截图。不要把仓库根目录临时导出的微信图片源文件一并提交（正式资源放在 `public/images/`）。
 
 ## 从哪里改
 
 ### UI 与内容
 
 - 首页与演出介绍：`src/app/page.tsx`
+- 购票页与观演须知：`src/app/shows/page.tsx`、`src/components/ShowsBookingPanel.tsx`
+- 场次开放对象文案：`src/lib/show-audience.ts`
+- 开票时间：`src/lib/ticket-sale.ts`
 - 全站样式、响应式布局、字体：`src/app/globals.css`
 - 根布局与简繁转换 Provider：`src/app/layout.tsx`、`src/components/LocaleProvider.tsx`
 - 网站导航：`src/components/SiteHeader.tsx`、`src/components/SiteHeaderClient.tsx`
-- 首页图片与 Logo：`public/images/`
+- 页脚与社交媒体二维码：`src/components/SiteFooter.tsx`、`src/components/FooterQrZoom.tsx`
+- 首页剧照轮播：`src/components/StageGallery.tsx`（固定高度黑底、`object-fit: contain`，不拉伸）
+- 首页图片与 Logo、观演群二维码：`public/images/`
 - 字体文件：`public/fonts/`
 
 简繁切换使用 `opencc-js`，LocaleProvider 会转换页面文字和部分可访问性/表单属性；新增特殊文本时检查切换后的显示。用户此前特别要求减少圆角，延续当前视觉时优先使用直角或小圆角，不要随意恢复大圆角风格。
@@ -67,7 +80,7 @@ git status --short
 
 - 注册、登录与账号摘要：`src/app/account/page.tsx`、`src/components/AccountForm.tsx`
 - 场次与登记：`src/app/shows/[id]/page.tsx`、`src/components/OrderForm.tsx`、`src/app/actions/orders.ts`
-- 订单详情/电子票：`src/app/orders/[code]/page.tsx`
+- 订单详情 / 购票编号 / 观演群：`src/app/orders/[code]/page.tsx`、`src/components/OrderWechatGroup.tsx`
 - 票夹与找票：`src/app/tickets/page.tsx`、`src/components/TicketLookupForm.tsx`
 - 人格测试：`src/app/personality/page.tsx`、`src/components/PersonalityQuiz.tsx`、`src/lib/personality-data.json`
 - 在线干事订单审核：`src/app/admin/online-orders/page.tsx`、`src/app/actions/supabase-admin.ts`
@@ -75,7 +88,7 @@ git status --short
 - 订单批量改状态/删除：`src/components/OnlineOrdersBulkPanel.tsx`（需迁移 `20261106103000_admin_bulk_orders.sql`）
 - 场次库存（总票数 / 剩余）在订单管理页顶部汇总编辑：`src/components/AdminInventorySummary.tsx`
 - 线上现场核销：`src/app/admin/online-checkin/page.tsx`、`src/app/actions/supabase-checkin.ts`
-- Supabase 服务端客户端与数据访问：`src/lib/supabase/`
+- Supabase 服务端客户端与数据访问：`src/lib/supabase/`（公开只读可用 `public.ts` / `browser.ts`）
 
 ### 出票邮件
 
@@ -94,7 +107,7 @@ git status --short
 - 线上订单入口是 `/admin/online-orders`，账号入口是 `/admin/online-accounts`，线上核销入口是 `/admin/online-checkin`。
 - 余票 = `capacity - 有效订单票数`。总票数在订单管理页顶部直接改 `shows.capacity`，不再使用内部预留。订单随时编辑若需 RPC，见 `20261105173000_admin_inventory_and_order_edit.sql`；订单改绑注册账号需 `20261106093000_admin_order_account.sql` 与 `20261106101500_admin_list_accounts.sql`。
 - 上传付款凭证使用 Supabase 私有 `payment-proofs` bucket；不要改为依赖 Netlify 本地文件。
-- `README.md`、`OPS.md` 含有较早的本地 JSON/部署说明，部分部署和管理流程可能过时。以当前实现、Netlify Git 集成和本指南的架构边界为准；若发现文档冲突，应顺手更新相关说明。
+- 文档以本指南、`README.md`、`OPS.md` 与当前代码为准；发现冲突时应顺手更新相关说明。
 
 ## Supabase 与环境变量
 
@@ -105,7 +118,7 @@ git status --short
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `NEXT_PUBLIC_SITE_URL`
-- `NEXT_PUBLIC_AMAP_KEY`（首页演出地点地图；控制台需配置域名白名单）
+- `NEXT_PUBLIC_AMAP_KEY`（购票页演出地点地图；控制台需配置域名白名单）
 - `NEXT_PUBLIC_AMAP_SECURITY_CODE`（高德安全密钥，若控制台已启用则必填）
 - `TICKET_SECRET`
 - `RESEND_API_KEY`
@@ -121,6 +134,7 @@ git status --short
 4. 仅更新 Netlify 环境变量时不需要代码提交；到项目 Deploys 点 **Trigger deploy → Deploy site** 重新构建，不需要清缓存。环境变量内容仅通过 Netlify 控制台配置，不在聊天中索取或输出。
 5. 用户曾遇到 Netlify Trigger deploy 操作被 reCAPTCHA 阻挡；若浏览器自动操作失败，告知用户手动点击并等待 Published，再继续验证。
 6. 未明确要求发布时，不要擅自提交或推送；部署失败时检查 Netlify Build/Deploy log，报告具体失败原因。
+7. Netlify 额度紧张时避免无意义的重复部署；优先合并改动一次推送。
 
 ## 协作约定
 

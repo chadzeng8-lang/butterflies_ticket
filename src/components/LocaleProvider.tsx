@@ -124,10 +124,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       convertDocument.current();
     };
 
-    // Default simplified Chinese needs no converter. Only load OpenCC when HK is active.
-    if (localeRef.current === "hk") {
-      void ensureConverters.current();
-    }
+    // Source copy is Simplified Chinese. Convert on mount so any leftover
+    // Traditional (or a restored HK preference) is applied consistently.
+    void ensureConverters.current?.().then(() => {
+      if (active) convertDocument.current();
+    });
 
     return () => {
       active = false;
@@ -140,11 +141,6 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.locale = locale;
     document.documentElement.lang = locale === "cn" ? "zh-CN" : "zh-HK";
-
-    if (locale === "cn" && !converters.current) {
-      // Still on default simplified source text — nothing to convert.
-      return;
-    }
 
     const load = ensureConverters.current;
     if (!load) return;

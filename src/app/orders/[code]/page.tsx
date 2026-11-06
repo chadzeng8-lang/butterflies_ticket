@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarkPaidForm } from "@/components/MarkPaidForm";
+import { OrderAttendeeEditor } from "@/components/OrderAttendeeEditor";
 import { OrderWechatGroup } from "@/components/OrderWechatGroup";
 import { PaymentMethods } from "@/components/PaymentMethods";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -8,7 +9,7 @@ import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { depositAmounts } from "@/lib/payment-methods";
-import { depositPerPersonLabel } from "@/lib/pricing-copy";
+import { depositPerPersonLabel, paymentTransferNote } from "@/lib/pricing-copy";
 import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { loadPurchaseNumbersForShows } from "@/lib/supabase/purchase-numbers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -27,9 +28,11 @@ export default async function OrderPage({
   const sp = await searchParams;
   const supabaseRecord = await getSupabaseOrderWithShow(decodeURIComponent(code));
   if (!supabaseRecord) notFound();
-  const { order, show } = supabaseRecord;
+  const { order, attendees } = supabaseRecord;
   const supabase = await createSupabaseServerClient();
   const isAdmin = await isCurrentUserTicketingAdmin(supabase);
+  const canEditAttendees =
+    order.status !== "expired" && order.status !== "cancelled";
 
   const total = order.ticketTotalCents + order.depositTotalCents;
   const depositBoth = depositAmounts(order.quantity);
@@ -114,19 +117,17 @@ export default async function OrderPage({
           )}
         </article>
 
-        {order.status !== "expired" && order.status !== "cancelled" && (
-          <OrderWechatGroup />
-        )}
-
         {order.status === "pending_payment" && (
           <article className="panel">
             <h2>转账付款</h2>
-            {show.paymentNote && (
-              <p className="muted" style={{ marginBottom: "0.9rem" }}>
-                {show.paymentNote}
-              </p>
-            )}
-            <PaymentMethods quantity={order.quantity} phone={order.phone} />
+            <p className="muted" style={{ marginBottom: "0.9rem" }}>
+              {paymentTransferNote()}
+            </p>
+            <PaymentMethods
+              quantity={order.quantity}
+              phone={order.phone}
+              purchaseNo={purchaseNo}
+            />
             <div style={{ marginTop: "1.1rem" }}>
               <MarkPaidForm code={order.code} />
             </div>
@@ -158,6 +159,18 @@ export default async function OrderPage({
             </div>
           </article>
         )}
+
+        {order.status !== "expired" && order.status !== "cancelled" && (
+          <OrderWechatGroup />
+        )}
+
+        {canEditAttendees ? (
+          <OrderAttendeeEditor
+            orderCode={order.code}
+            quantity={order.quantity}
+            attendees={attendees}
+          />
+        ) : null}
 
         <p>
           <Link href="/tickets">去票夹查询</Link> ·{" "}

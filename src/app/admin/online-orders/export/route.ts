@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ID_DOC_TYPE_LABEL, isIdDocType } from "@/lib/attendees";
 import { formatShowTime } from "@/lib/format";
 import { phoneTail } from "@/lib/phone";
 import {
@@ -24,6 +25,15 @@ type OnlineShow = {
   title: string;
   starts_at: string;
   venue: string;
+};
+
+type AttendeeRow = {
+  order_id: number;
+  sort_index: number;
+  full_name: string;
+  phone: string;
+  id_doc_type: string;
+  id_number: string;
 };
 
 function csvCell(value: string | number): string {
@@ -102,41 +112,79 @@ export async function GET(request: Request) {
       ? orders.filter((order) => order.show_id === showId)
       : orders;
 
-  const rows = filtered
-    .slice()
-    .sort((a, b) => {
-      if (a.show_id !== b.show_id) {
-        const aShow = showsById.get(a.show_id)?.starts_at || "";
-        const bShow = showsById.get(b.show_id)?.starts_at || "";
-        return aShow.localeCompare(bShow);
-      }
-      return (
-        (purchaseNumbers.get(a.id) || 0) - (purchaseNumbers.get(b.id) || 0)
-      );
-    })
-    .map((order) => {
-      const show = showsById.get(order.show_id);
-      return [
-        purchaseNumbers.get(order.id) || "",
-        show ? formatShowTime(show.starts_at) : "",
-        show?.title || "",
-        phoneTail(order.phone),
-        order.phone,
-        order.quantity,
-        ORDER_STATUS_LABEL[order.status] || order.status,
-        order.admin_note || "",
-      ];
-    });
+  const orderIds = filtered.map((order) => order.id);
+  const attendeesByOrder = new Map<number, AttendeeRow[]>();
+  if (orderIds.length > 0) {
+    const { data: attendeeData, error: attendeeError } = await supabase
+      .from("order_attendees")
+      .select("order_id, sort_index, full_name, phone, id_doc_type, id_number")
+      .in("order_id", orderIds)
+      .order("sort_index");
+    if (attendeeError) {
+      return NextResponse.json({ error: "attendee_lookup_failed" }, { status: 500 });
+    }
+    for (const row of (attendeeData || []) as AttendeeRow[]) {
+      const list = attendeesByOrder.get(row.order_id) || [];
+      list.push(row);
+      attendeesByOrder.set(row.order_id, list);
+    }
+  }
+
+  const sortedOrders = filtered.slice().sort((a, b) => {
+    if (a.show_id !== b.show_id) {
+      const aShow = showsById.get(a.show_id)?.starts_at || "";
+      const bShow = showsById.get(b.show_id)?.starts_at || "";
+      return aShow.localeCompare(bShow);
+    }
+    return (purchaseNumbers.get(a.id) || 0) - (purchaseNumbers.get(b.id) || 0);
+  });
+
+  const rows: Array<Array<string | number>> = [];
+  for (const order of sortedOrders) {
+    const show = showsById.get(order.show_id);
+    const attendees = attendeesByOrder.get(order.id) || [];
+    const base = [
+      purchaseNumbers.get(order.id) || "",
+      show ? formatShowTime(show.starts_at) : "",
+      show?.title || "",
+      phoneTail(order.phone),
+      order.phone,
+      order.quantity,
+      ORDER_STATUS_LABEL[order.status] || order.status,
+      order.admin_note || "",
+    ];
+    if (attendees.length === 0) {
+      rows.push([...base, "", "", "", "", ""]);
+      continue;
+    }
+    for (const attendee of attendees) {
+      rows.push([
+        ...base,
+        attendee.sort_index,
+        attendee.full_name,
+        attendee.phone,
+        isIdDocType(attendee.id_doc_type)
+          ? ID_DOC_TYPE_LABEL[attendee.id_doc_type]
+          : attendee.id_doc_type,
+        attendee.id_number,
+      ]);
+    }
+  }
 
   const header = [
     "购票编号",
     "场次时间",
     "场次",
-    "手机尾号",
-    "手机",
+    "订单手机尾号",
+    "订单手机",
     "张数",
     "状态",
     "备注",
+    "观众序号",
+    "观众姓名",
+    "观众电话",
+    "证件类型",
+    "证件号",
   ];
 
   const csv = `\uFEFF${[header, ...rows]

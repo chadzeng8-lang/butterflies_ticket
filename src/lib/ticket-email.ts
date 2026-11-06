@@ -133,7 +133,7 @@ export async function sendOrderCreatedEmail(input: {
       <p>你的《蝶》沉浸版展演订单已创建成功，目前状态为<strong>待付款</strong>。</p>
       <p><strong>下一步请完成：</strong></p>
       <ol>
-        <li>打开订单页，按指引缴付按金（¥50 或 HK$60 / 张，到场观演后全额退还）。</li>
+        <li>打开订单页，按指引缴付按金（¥50 或 HK$60 / 张，到场观演后全额退还）；转账备注请填写购票编号及手机号。</li>
         <li>上传付款截图，并点击「我已付款」提交凭证。</li>
         <li>在订单页扫码加入微信观演群「港中深观剧群」，以便接收演出通知。</li>
         <li>提交后请耐心等待干事核对到账；确认后会再次发信通知出票。</li>
@@ -201,11 +201,19 @@ export async function sendTicketIssuedEmail(input: {
           ? `，购票编号为 <strong style="font-size:1.4em;">${escapeHtml(purchaseNo)}</strong>`
           : ""
       }（共 ${quantity} 张）。</p>
-      <p><strong>入场方式：</strong>现场核对接购票编号与手机号 <strong>${phone}</strong>，无需出示二维码。</p>
+      <p><strong>入场方式：</strong>现场核对${
+        purchaseNo
+          ? `购票编号 <strong style="font-size:1.25em;">${escapeHtml(purchaseNo)}</strong>`
+          : "购票编号"
+      }与手机号 <strong>${phone}</strong>，无需出示二维码。</p>
       <p><strong>下一步：</strong></p>
       <ol>
-        <li>打开订单页或「票夹」，核对购票编号与登记手机号。</li>
-        <li>演出当天提前入场，向工作人员报编号并核对手机号。</li>
+        <li>打开订单页或「票夹」，核对${
+          purchaseNo
+            ? `购票编号 <strong>${escapeHtml(purchaseNo)}</strong>`
+            : "购票编号"
+        }与登记手机号 <strong>${phone}</strong>。</li>
+        <li>演出当天提前入场，向工作人员报购票编号并核对手机号。</li>
         <li>入校预约指南开放后，请按网站「入校指南」完成访客预约。</li>
       </ol>
       <p><a href="${safeUrl}">打开订单页</a></p>

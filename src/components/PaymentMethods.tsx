@@ -4,17 +4,29 @@ import { depositAmounts, FPS_MOBILE, PAYMENT_METHODS } from "@/lib/payment-metho
 export function PaymentMethods({
   quantity,
   phone,
+  purchaseNo,
 }: {
   quantity: number;
   phone: string;
+  purchaseNo?: number | null;
 }) {
   const { rmb, hkd } = depositAmounts(quantity);
+  const remarkPhone = phone.trim() || "登记手机号";
 
   return (
     <div className="payment-methods">
       <div className="notice">
-        <strong>转账备注请填写登记手机号</strong>
-        <div className="order-code">{phone}</div>
+        <strong>转账备注请填写购票编号及手机号</strong>
+        <div className="payment-remark-values">
+          <div>
+            <span className="payment-remark-label">购票编号</span>
+            <div className="order-code">{purchaseNo || "—"}</div>
+          </div>
+          <div>
+            <span className="payment-remark-label">手机号</span>
+            <div className="order-code">{remarkPhone}</div>
+          </div>
+        </div>
         <span>
           应付按金：<strong>¥{rmb}</strong> 或 <strong>HK${hkd}</strong>
           （{quantity} 张 × ¥50 / HK$60）。请任选一种方式付款。

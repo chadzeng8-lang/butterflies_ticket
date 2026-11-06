@@ -11,9 +11,13 @@ import {
   sendOrderCreatedEmail,
   sendPaymentSubmittedEmail,
 } from "@/lib/ticket-email";
+import {
+  attendeesToJson,
+  parseAttendeesFromFormData,
+} from "@/lib/attendees";
 import { isTicketSaleOpen, ticketSaleClosedMessage } from "@/lib/ticket-sale";
 
-export type ActionState = { error?: string };
+export type ActionState = { error?: string; ok?: string };
 
 function isNextRedirect(e: unknown): boolean {
   return (
@@ -35,25 +39,26 @@ export async function createOrderAction(
     if (!user) redirect(`/account?next=/shows/${formData.get("showId")}`);
 
     const showId = Number(formData.get("showId"));
-    const phone = String(formData.get("phone") || "").trim();
     const contactExtra = String(formData.get("contactExtra") || "")
       .trim()
       .toLowerCase();
     const quantity = Number(formData.get("quantity") || "1");
 
-    if (!Number.isInteger(showId) || showId < 1 || !phone) {
-      return { error: "请填写手机号。" };
+    if (!Number.isInteger(showId) || showId < 1) {
+      return { error: "场次无效。" };
+    }
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) {
+      return { error: "每笔订单最多购买 5 张票。" };
     }
     if (!contactExtra) {
       return { error: "请填写邮箱。" };
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .maybeSingle();
-    const buyerName = String(profile?.full_name || "").trim() || "观众";
+    const parsed = parseAttendeesFromFormData(formData, quantity);
+    if (parsed.error) return { error: parsed.error };
+    const attendees = parsed.attendees;
+    const buyerName = attendees[0].fullName;
+    const phone = attendees[0].phone;
 
     const isAdmin = await isCurrentUserTicketingAdmin(supabase);
     if (!isTicketSaleOpen() && !isAdmin) {
@@ -71,11 +76,18 @@ export async function createOrderAction(
     const result = Array.isArray(data) ? data[0] : data;
     if (!result?.order_code) throw new Error("ORDER_CREATE_FAILED");
 
+    const orderCode = String(result.order_code);
+    const { error: attendeeError } = await supabase.rpc("save_order_attendees", {
+      p_order_code: orderCode,
+      p_attendees: attendeesToJson(attendees),
+    });
+    if (attendeeError) throw new Error(attendeeError.message);
+
     try {
       await sendOrderCreatedEmail({
         to: contactExtra,
         buyerName,
-        orderCode: String(result.order_code),
+        orderCode,
       });
     } catch {
       // 邮件失败不阻断下单；用户仍可在订单页完成付款。
@@ -84,7 +96,8 @@ export async function createOrderAction(
     revalidatePath("/");
     revalidatePath("/admin");
     revalidatePath("/admin/orders");
-    redirect(`/orders/${result.order_code}`);
+    revalidatePath("/admin/online-orders");
+    redirect(`/orders/${orderCode}`);
   } catch (e) {
     if (isNextRedirect(e)) throw e;
     const msg = e instanceof Error ? e.message : "UNKNOWN";
@@ -97,8 +110,58 @@ export async function createOrderAction(
       PERSON_TICKET_LIMIT: "同一账号最多登记 5 张票。",
       AUTH_LOOKUP_FAILED: "登录状态检查失败，请重新登录。",
       ORDER_CREATE_FAILED: "创建订单失败，请稍后再试。",
+      ATTENDEES_REQUIRED: "请填写全部观众信息。",
+      ATTENDEE_COUNT_MISMATCH: "观众人数须与票数一致。",
+      ATTENDEE_DETAILS_REQUIRED: "请完整填写每位观众的姓名、电话与证件号。",
+      BAD_ID_DOC_TYPE: "证件类型无效。",
     };
     return { error: map[msg] || "下单失败，请稍后重试。" };
+  }
+}
+
+export async function updateOrderAttendeesAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const user = await getSupabaseUser(supabase);
+    if (!user) redirect("/account");
+
+    const code = String(formData.get("code") || "").trim().toUpperCase();
+    const quantity = Number(formData.get("quantity") || "0");
+    if (!code) return { error: "订单无效。" };
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) {
+      return { error: "票数无效。" };
+    }
+
+    const parsed = parseAttendeesFromFormData(formData, quantity);
+    if (parsed.error) return { error: parsed.error };
+
+    const { error } = await supabase.rpc("save_order_attendees", {
+      p_order_code: code,
+      p_attendees: attendeesToJson(parsed.attendees),
+    });
+    if (error) throw new Error(error.message);
+
+    revalidatePath(`/orders/${code}`);
+    revalidatePath("/tickets");
+    revalidatePath("/admin/online-orders");
+    return { ok: "观众信息已保存。" };
+  } catch (e) {
+    if (isNextRedirect(e)) throw e;
+    const msg = e instanceof Error ? e.message : "UNKNOWN";
+    const map: Record<string, string> = {
+      ORDER_NOT_FOUND: "订单不存在。",
+      ORDER_FORBIDDEN: "无权修改此订单。",
+      ORDER_CLOSED: "订单已取消或过期，无法修改。",
+      ATTENDEES_REQUIRED: "请填写全部观众信息。",
+      ATTENDEE_COUNT_MISMATCH: "观众人数须与票数一致。",
+      ATTENDEE_DETAILS_REQUIRED: "请完整填写每位观众的姓名、电话与证件号。",
+      BAD_ID_DOC_TYPE: "证件类型无效。",
+      AUTH_REQUIRED: "请先登录。",
+    };
+    return { error: map[msg] || "保存失败，请稍后重试。" };
   }
 }
 

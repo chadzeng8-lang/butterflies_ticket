@@ -1,3 +1,7 @@
+import {
+  isIdDocType,
+  type OrderAttendee,
+} from "@/lib/attendees";
 import type { Order, OrderStatus, OrderWithShow, Show, Ticket } from "@/lib/types";
 import {
   createSupabaseServerClient,
@@ -7,6 +11,28 @@ import {
   mapSupabaseShow,
   type SupabaseShowRow,
 } from "@/lib/supabase/shows";
+
+type AttendeeRow = {
+  id: number;
+  order_id: number;
+  sort_index: number;
+  full_name: string;
+  phone: string;
+  id_doc_type: string;
+  id_number: string;
+};
+
+function mapAttendee(row: AttendeeRow): OrderAttendee | null {
+  if (!isIdDocType(row.id_doc_type)) return null;
+  return {
+    id: row.id,
+    sortIndex: row.sort_index,
+    fullName: row.full_name,
+    phone: row.phone,
+    idDocType: row.id_doc_type,
+    idNumber: row.id_number,
+  };
+}
 
 type OrderRow = {
   id: number;
@@ -74,6 +100,7 @@ export async function getSupabaseOrderWithShow(code: string): Promise<{
   order: OrderWithShow;
   show: Show;
   tickets: Ticket[];
+  attendees: OrderAttendee[];
 } | null> {
   const supabase = await createSupabaseServerClient();
   const user = await getSupabaseUser(supabase);
@@ -105,6 +132,13 @@ export async function getSupabaseOrderWithShow(code: string): Promise<{
     .order("id");
   if (ticketError) throw new Error("SUPABASE_TICKET_LOOKUP_FAILED");
 
+  const { data: attendeeData, error: attendeeError } = await supabase
+    .from("order_attendees")
+    .select("*")
+    .eq("order_id", order.id)
+    .order("sort_index");
+  if (attendeeError) throw new Error("SUPABASE_ATTENDEE_LOOKUP_FAILED");
+
   return {
     order: {
       ...order,
@@ -114,6 +148,9 @@ export async function getSupabaseOrderWithShow(code: string): Promise<{
     },
     show,
     tickets: (ticketData as TicketRow[]).map(mapTicket),
+    attendees: ((attendeeData as AttendeeRow[]) || [])
+      .map(mapAttendee)
+      .filter((item): item is OrderAttendee => Boolean(item)),
   };
 }
 
