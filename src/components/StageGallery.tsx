@@ -80,7 +80,7 @@ export function StageGallery() {
                     sizes="(max-width: 720px) 92vw, min(720px, 48vw)"
                     quality={68}
                     className="gallery-photo-img"
-                    loading="lazy"
+                    loading={isActive ? "lazy" : "eager"}
                   />
                 ) : null}
               </figure>
