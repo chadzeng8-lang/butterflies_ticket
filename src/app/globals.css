@@ -58,7 +58,7 @@ a[href*="netlify.com"][style*="position: fixed"] {
   --success-soft: rgba(159, 214, 194, 0.12);
   --radius: 2px;
   --radius-sm: 2px;
-  --font-cjk: "TicketSimplified";
+  --font-cjk: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC";
   --font-display: var(--font-cjk), "Avenir Next Condensed", "Bahnschrift", "PingFang SC", "Hiragino Sans GB",
     "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --font-body: var(--font-cjk), "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB",
