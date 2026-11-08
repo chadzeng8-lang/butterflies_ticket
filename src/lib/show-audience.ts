@@ -12,7 +12,7 @@ function hkDateKey(iso: string): string {
 export const SHOW_AUDIENCE_PUBLIC = "面向公众人士";
 
 export const SHOW_AUDIENCE_CUHK =
-  "仅开放给香港中文大学及香港中文大学（深圳）的同学及教职工";
+  "仅开放于香港中文大学/香港中文大学（深圳）学生、校友及教职工";
 
 export function showAudienceLabel(startsAtIso: string): string | null {
   const key = hkDateKey(startsAtIso);
