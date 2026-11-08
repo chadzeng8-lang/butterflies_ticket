@@ -59,7 +59,7 @@ const productionTimeline = [
     description: "导演团队和演员进行首次线下破冰活动，《蝶》剧组正式成立。",
   },
   {
-    date: "2026.06.08-2026.07中旬",
+    date: "2026.06-2026.07",
     title: "线上声乐学习与剧本研读",
     description: "演员进行唱段与和声学习，并研读剧本，创作角色小传。",
   },
@@ -125,7 +125,7 @@ export default async function HomePage() {
           <h1 id="event-title">音乐剧《蝶》学生版</h1>
           <p className="event-tagline">爱，是种飞翔的方式。</p>
           <p className="event-intro">
-            一场关于爱与斗争、命运与自由的沉浸式音乐剧。来自世界尽头的坚持和选择。
+            一个关于爱与斗争、命运与自由的故事。一次来自世界尽头的坚持和选择。
           </p>
 
           <div className="event-facts">
@@ -197,7 +197,7 @@ export default async function HomePage() {
           <p className="eyebrow">About CU Musical / 02</p>
           <h2>关于我们</h2>
           <p>
-            香港中文大学音乐剧社（CU Musical）成立于 2019 年，是香港中文大学最具活力的学生表演艺术团体之一。我们汇聚来自香港、本地、内地及国际背景的音乐剧爱好者，致力于打造高质量音乐剧制作，推动校园艺术发展与大湾区高校文化交流。
+            香港中文大学音乐剧社（CU Musical）成立于 2019 年，是香港中文大学最具活力的学生表演艺术团体之一。我们汇聚来自香港本地、大陆内地及国际背景的音乐剧爱好者，致力于打造高质量音乐剧制作，推动校园艺术发展与大湾区高校文化交流。
           </p>
           <p>
             近年来，社团先后制作《Into the Woods》《Lizzie》等大型音乐剧作品，并举办 Gala Night 音乐剧晚会、音乐剧工作坊及跨校交流活动，持续为学生提供专业化、多元化的表演艺术平台。
@@ -254,12 +254,20 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="credits-section" id="personality" aria-labelledby="personality-title">
+  <div className="section-head">
+    <div>
+      <p className="eyebrow">Personality Quiz / 05</p>
+      <h2 id="personality-title">测测你是《蝶》里的哪个人</h2>
+    </div>
+  </div>
+  <Link className="ticket-lookup-link" href="/personality">
+    开始测试 <span aria-hidden>→</span>
+  </Link>
+</section>
       <section className="closing-cta">
         <p className="eyebrow">CU Musical · 2026</p>
-        <h2>一场婚礼，一个族群的命运。<br />等你走进《蝶》的世界。</h2>
-        <Link className="ticket-lookup-link" href="/personality">
-          测测你是《蝶》里的哪个人 <span aria-hidden>→</span>
-        </Link>
+        <h3>一场婚礼，一个族群的命运。<br />等你走进《蝶》的世界。</h3>
         {canBook ? (
           <Link className="btn" href="/shows">选择场次并登记 <span aria-hidden>→</span></Link>
         ) : (
