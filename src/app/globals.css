@@ -3259,3 +3259,11 @@ textarea {
     font-size: clamp(1.8rem, 8.5vw, 2.7rem);
   }
 }
+@media (max-width: 640px) {
+  .gallery-section .photo-gallery-indexed {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+}
