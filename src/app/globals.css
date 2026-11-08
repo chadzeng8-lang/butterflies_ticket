@@ -3342,3 +3342,36 @@ html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
 .home-shell .stage-gallery-nav {
   border-radius: 50%;
 }
+/* 购票页标题、按钮和观演须知 */
+.booking-page .booking-page-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 2rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.booking-page .guide-section .section-head h2 {
+  font-family: var(--font-body);
+  font-size: 1.5rem;
+  line-height: 1.35;
+}
+
+.booking-page :is(.show-section, .guide-section) .section-head p:not(.eyebrow) {
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
+
+.booking-page .show-row:hover {
+  padding-left: 0.55rem;
+}
+
+.booking-page .show-row .btn {
+  border-radius: 8px;
+}
+
+@media (max-width: 640px) {
+  .booking-page .booking-page-title {
+    font-size: 1.75rem;
+  }
+}
