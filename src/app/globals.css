@@ -3267,3 +3267,66 @@ textarea {
     aspect-ratio: 4 / 3;
   }
 }
+
+/* 首页主标题 */
+.home-shell .event-summary h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* 首页主题句 */
+.home-shell .event-tagline {
+  font-size: clamp(1.125rem, 2.3vw, 1.5rem);
+  line-height: 1.5;
+}
+
+/* 01–05 章节的上下留白 */
+.home-shell :is(.story-section, .about-section, .gallery-section, .credits-section) {
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+}
+
+/* 01–05 章节标题 */
+.home-shell :is(.story-heading, .about-copy, .gallery-heading, .section-head) h2 {
+  font-size: clamp(1.5rem, 3.2vw, 2.25rem);
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+/* 首页长段落 */
+.home-shell .event-intro,
+.home-shell .story-copy p:not(.story-tagline),
+.home-shell .about-copy > p:not(.eyebrow) {
+  max-inline-size: 34em;
+  font-size: 1rem;
+  line-height: 1.85;
+  text-wrap: pretty;
+}
+
+/* 简体首页标题优先用中宋，正文沿用黑体 */
+html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
+  font-family: "STZhongsong", "华文中宋", "Songti SC", "Noto Serif SC", SimSun, serif;
+  font-weight: 400;
+}
+
+/* 首页底部结语 */
+.home-shell .closing-cta h2 {
+  font-size: clamp(1.25rem, 4.5vw, 1.9rem);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.home-shell .closing-cta .closing-intro {
+  display: block;
+  margin-bottom: 0.65rem;
+  color: #ded6ca;
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 3.6vw, 1.1rem);
+  font-weight: 400;
+}
+
+.home-shell .closing-cta .closing-line {
+  color: #e4c99a;
+}
