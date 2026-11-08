@@ -3330,3 +3330,15 @@ html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
 .home-shell .closing-cta .closing-line {
   color: #e4c99a;
 }
+/* 首页文字按钮，包括开票提示、立即登记和开始测试 */
+.home-shell .btn,
+/* 页头繁简切换按钮 */
+.locale-toggle {
+  border-radius: 8px;
+}
+
+/* 页头音乐剧社标志和剧照左右箭头 */
+.brand-logo,
+.home-shell .stage-gallery-nav {
+  border-radius: 50%;
+}
