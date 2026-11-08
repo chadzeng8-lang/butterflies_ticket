@@ -3375,3 +3375,44 @@ html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
     font-size: 1.75rem;
   }
 }
+/* 购票页：突出场次日期和开放对象 */
+.booking-page .show-date h3 {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.booking-page .show-date .meta {
+  line-height: 1.6;
+}
+
+
+/* 购票页：统一入口和每场登记按钮 */
+.booking-page .btn.booking-button,
+.booking-page .btn.show-booking-button {
+  min-height: 2.75rem;
+  border-radius: 8px;
+}
+
+.booking-page :is(.booking-button, .show-booking-button):focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+}
+
+/* 手机：场次信息、状态和按钮各占一行 */
+@media (max-width: 640px) {
+  .booking-page .show-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .booking-page .show-availability {
+    min-width: 0;
+    justify-self: start;
+  }
+
+  .booking-page .show-row > .btn.show-booking-button {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
