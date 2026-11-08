@@ -17,14 +17,14 @@ export default async function ShowsPage() {
   const saleOpen = isTicketSaleOpen();
 
   return (
-    <main className="shell home-shell">
+   <main className="shell home-shell booking-page">
       <SiteHeader />
 
       <section className="section show-section" id="shows">
         <div className="section-head">
           <div>
             <p className="eyebrow">Tickets / Booking</p>
-            <h2>报名与购票</h2>
+            <h1 className="booking-page-title">报名与购票</h1>
             <p>请按顺序完成以下三步，即可顺利入场观演。</p>
           </div>
         </div>
