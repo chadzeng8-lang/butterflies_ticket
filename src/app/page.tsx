@@ -261,13 +261,13 @@ export default async function HomePage() {
       <h2 id="personality-title">测测你是《蝶》里的哪个人</h2>
     </div>
   </div>
-  <Link className="ticket-lookup-link" href="/personality">
+ <Link className="btn" href="/personality">
     开始测试 <span aria-hidden>→</span>
   </Link>
 </section>
       <section className="closing-cta">
         <p className="eyebrow">CU Musical · 2026</p>
-        <h3>一场婚礼，一个族群的命运。<br />等你走进《蝶》的世界。</h3>
+        <h2>一场婚礼，<br />一个族群的命运。<br />等你走进《蝶》的世界。</h2>
         {canBook ? (
           <Link className="btn" href="/shows">选择场次并登记 <span aria-hidden>→</span></Link>
         ) : (
