@@ -3259,3 +3259,209 @@ textarea {
     font-size: clamp(1.8rem, 8.5vw, 2.7rem);
   }
 }
+
+/* =========================================
+   BUTTERFLIES HOME — VISUAL V1
+   首页视觉升级：剧场黑 / 暗酒红 / 香槟金
+   ========================================= */
+
+.home-shell {
+  --home-gold: #c5a16b;
+  --home-gold-light: #e4c99a;
+  --home-cream: #f0e7d9;
+  --home-muted: #b8aca1;
+  --home-line: rgba(197, 161, 107, 0.24);
+
+  color: var(--home-cream);
+  background:
+    radial-gradient(
+      ellipse 70% 24% at 50% 3%,
+      rgba(96, 27, 48, 0.24),
+      transparent 75%
+    ),
+    linear-gradient(
+      180deg,
+      #0d0a0c 0%,
+      #090909 45%,
+      #120b10 100%
+    );
+}
+
+/* 首页小标题 */
+.home-shell .eyebrow {
+  color: var(--home-gold);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+/* 首页大标题 */
+.home-shell h1,
+.home-shell h2,
+.home-shell h3 {
+  font-family: var(--font-display);
+  text-wrap: pretty;
+}
+
+.home-shell .event-summary h1 {
+  color: var(--home-cream);
+  font-size: clamp(2.5rem, 5.4vw, 4.8rem);
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+/* 主视觉海报 */
+.home-shell .event-poster {
+  border: 1px solid var(--home-line);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.55),
+    0 0 65px rgba(112, 33, 52, 0.12);
+}
+
+/* 主题文案 */
+.home-shell .event-tagline {
+  color: var(--home-gold-light);
+  font-size: clamp(1.4rem, 2.5vw, 2.1rem);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.home-shell .event-intro {
+  color: var(--home-muted);
+  font-size: 1.02rem;
+  line-height: 1.95;
+}
+
+/* 演出信息 */
+.home-shell .event-facts {
+  border-top-color: var(--home-line);
+}
+
+.home-shell .event-facts > div {
+  border-bottom-color: var(--home-line);
+}
+
+.home-shell .event-facts > div > span {
+  color: var(--home-gold);
+}
+
+.home-shell .event-facts strong {
+  color: var(--home-cream);
+}
+
+/* 登记信息 */
+.home-shell .booking-summary {
+  border-color: var(--home-line);
+}
+
+.home-shell .booking-price {
+  color: var(--home-gold-light);
+  font-weight: 650;
+}
+
+/* 仅修改首页按钮 */
+.home-shell .btn:not(:disabled) {
+  background: var(--home-gold);
+  color: #17100d;
+  border: 1px solid var(--home-gold);
+  transition:
+    background 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.home-shell .btn:not(:disabled):hover {
+  background: var(--home-gold-light);
+  box-shadow: 0 8px 26px rgba(197, 161, 107, 0.16);
+  transform: translateY(-2px);
+}
+
+/* 剧情、关于我们、剧照、演职人员 */
+.home-shell .story-section,
+.home-shell .about-section,
+.home-shell .gallery-section,
+.home-shell .credits-section {
+  border-bottom-color: var(--home-line);
+}
+
+.home-shell .story-heading h2,
+.home-shell .about-copy h2,
+.home-shell .gallery-heading h2,
+.home-shell .section-head h2,
+.home-shell .closing-cta h2 {
+  color: var(--home-cream);
+  font-weight: 600;
+  letter-spacing: 0.015em;
+}
+
+.home-shell .story-copy p:not(.story-tagline),
+.home-shell .about-copy > p:not(.eyebrow) {
+  color: var(--home-muted);
+  line-height: 2;
+}
+
+.home-shell .story-tagline {
+  color: var(--home-gold-light) !important;
+}
+
+/* 演职人员 */
+.home-shell .credits-group h3 {
+  color: var(--home-gold-light);
+  border-bottom-color: var(--home-line);
+}
+
+.home-shell .credits-list > div {
+  border-bottom-color: var(--home-line);
+}
+
+.home-shell .credits-list dt {
+  color: var(--home-muted);
+}
+
+.home-shell .credits-list dd {
+  color: var(--home-cream);
+}
+
+/* 底部结尾 */
+.home-shell .closing-cta {
+  position: relative;
+}
+
+.home-shell .closing-cta h2 {
+  line-height: 1.45;
+}
+
+.home-shell .ticket-lookup-link {
+  color: var(--home-gold-light);
+}
+
+.home-shell .ticket-lookup-link:hover {
+  color: var(--home-cream);
+}
+
+/* 手机端微调 */
+@media (max-width: 640px) {
+  .home-shell .event-summary h1 {
+    font-size: clamp(2rem, 8vw, 3rem);
+    line-height: 1.25;
+  }
+
+  .home-shell .event-intro {
+    font-size: 0.96rem;
+    line-height: 1.85;
+  }
+
+  .home-shell .closing-cta h2 {
+    line-height: 1.5;
+  }
+}
+
+/* 减少动态效果偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .home-shell .btn {
+    transition: none;
+  }
+}
+
+
