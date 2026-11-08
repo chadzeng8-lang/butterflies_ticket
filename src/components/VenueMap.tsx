@@ -26,6 +26,24 @@ declare global {
   }
 }
 
+const AMAP_LOAD_TIMEOUT_MS = 12_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(label)), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 function loadAmapScript(key: string, securityCode?: string): Promise<AMapNamespace> {
   if (window.AMap) {
     return Promise.resolve(window.AMap);
@@ -35,9 +53,13 @@ function loadAmapScript(key: string, securityCode?: string): Promise<AMapNamespa
     window._AMapSecurityConfig = { securityJsCode: securityCode };
   }
 
-  return new Promise((resolve, reject) => {
+  const loadPromise = new Promise<AMapNamespace>((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>("script[data-amap-js]");
     if (existing) {
+      if (window.AMap) {
+        resolve(window.AMap);
+        return;
+      }
       existing.addEventListener("load", () => {
         if (window.AMap) resolve(window.AMap);
         else reject(new Error("AMap missing after load"));
@@ -57,6 +79,8 @@ function loadAmapScript(key: string, securityCode?: string): Promise<AMapNamespa
     script.onerror = () => reject(new Error("AMap script error"));
     document.head.appendChild(script);
   });
+
+  return withTimeout(loadPromise, AMAP_LOAD_TIMEOUT_MS, "AMap load timeout");
 }
 
 export function VenueMap() {

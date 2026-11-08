@@ -66,3 +66,45 @@ export const CAMPUS_ENTRY_STEPS: CampusEntryStep[] = [
     body: "打开小程序右下角「我的」，即可查看预约记录与审批状态。若演出当天仍未审核通过，请及时联系我们。",
   },
 ];
+
+export const CAMPUS_ROUTE_META = {
+  title: "路线指引",
+  venue: "香港中文大学（深圳）志仁楼一层（时光胶囊黑匣子）",
+} as const;
+
+export const CAMPUS_ROUTE_STEPS: CampusEntryStep[] = [
+  {
+    image: "/guides/campus-entry/route-1.jpg",
+    title: "从老南门入校",
+    body: "导航到香港中文大学（深圳）「老南门」，出示预约码进入。",
+    tips: [
+      "附近地铁口：大运地铁站（打车到老南门约 10 分钟）",
+      "私家车不能入校；附近停车场：深圳大运天地停车场",
+    ],
+  },
+  {
+    image: "/guides/campus-entry/route-2.jpg",
+    title: "直行到道路尽头",
+    body: "沿小路一直向前，走到道路尽头。",
+  },
+  {
+    image: "/guides/campus-entry/route-3.jpg",
+    title: "过马路到对面草坪",
+    body: "过马路，走到对面草坪一侧。",
+  },
+  {
+    image: "/guides/campus-entry/route-4.jpg",
+    title: "上楼梯",
+    body: "沿台阶上行，前往志仁楼方向。",
+  },
+  {
+    image: "/guides/campus-entry/route-5.jpg",
+    title: "继续直行",
+    body: "沿楼外廊道继续直行，按图示方向前进。",
+  },
+  {
+    image: "/guides/campus-entry/route-6.jpg",
+    title: "在剧场外等候入场",
+    body: "到达剧场附近后，可在门外等候，按现场指引入场。",
+  },
+];

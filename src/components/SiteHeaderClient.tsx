@@ -23,21 +23,15 @@ export function SiteHeaderClient({ siteName }: { siteName: string }) {
               height={96}
               sizes="40px"
               quality={60}
-              loading="lazy"
+              priority
             />
-            <span>{siteName}</span>
+            <span suppressHydrationWarning>{siteName}</span>
           </Link>
           <nav className="nav">
             <Link href="/">首页</Link>
             <Link href="/shows">购票</Link>
             <Link href="/tickets">票夹</Link>
-            {isAdmin ? (
-              <Link href="/campus-entry">入校指南</Link>
-            ) : (
-              <span className="nav-disabled" title="入校指南暂未开放" aria-disabled="true">
-                入校指南
-              </span>
-            )}
+            <Link href="/campus-entry">入校指南</Link>
             <Link href="/personality">人格测试</Link>
             <Link href="/account">账号</Link>
             {isAdmin && <Link href="/admin/online-orders">管理</Link>}
@@ -49,6 +43,7 @@ export function SiteHeaderClient({ siteName }: { siteName: string }) {
           onClick={toggleLocale}
           aria-label={locale === "cn" ? "切换到繁体中文" : "切换到简体中文"}
           title={locale === "cn" ? "切换到繁体中文" : "切换到简体中文"}
+          suppressHydrationWarning
         >
           {locale === "cn" ? "繁" : "简"}
         </button>

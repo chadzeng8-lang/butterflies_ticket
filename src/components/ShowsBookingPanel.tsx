@@ -40,11 +40,7 @@ export function ShowsBookingPanel({
           <span className="booking-timeline-index">03</span>
           <span className="booking-timeline-dot" aria-hidden />
           <h3>
-            {isAdmin ? (
-              <Link href="/campus-entry">预约入校</Link>
-            ) : (
-              <span className="booking-step-muted">预约入校</span>
-            )}
+            <Link href="/campus-entry">入校登记</Link>
           </h3>
         </li>
       </ol>

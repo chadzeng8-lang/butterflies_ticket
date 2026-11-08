@@ -5,14 +5,12 @@ import { OrderAttendeeEditor } from "@/components/OrderAttendeeEditor";
 import { OrderWechatGroup } from "@/components/OrderWechatGroup";
 import { PaymentMethods } from "@/components/PaymentMethods";
 import { SiteHeader } from "@/components/SiteHeader";
-import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { depositAmounts } from "@/lib/payment-methods";
 import { depositPerPersonLabel, paymentTransferNote } from "@/lib/pricing-copy";
 import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { loadPurchaseNumbersForShows } from "@/lib/supabase/purchase-numbers";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -29,8 +27,6 @@ export default async function OrderPage({
   const supabaseRecord = await getSupabaseOrderWithShow(decodeURIComponent(code));
   if (!supabaseRecord) notFound();
   const { order, attendees } = supabaseRecord;
-  const supabase = await createSupabaseServerClient();
-  const isAdmin = await isCurrentUserTicketingAdmin(supabase);
   const canEditAttendees =
     order.status !== "expired" && order.status !== "cancelled";
 
@@ -174,12 +170,8 @@ export default async function OrderPage({
 
         <p>
           <Link href="/tickets">去票夹查询</Link> ·{" "}
-          {isAdmin ? (
-            <Link href="/campus-entry">入校预约指南</Link>
-          ) : (
-            <span className="muted">入校指南（暂未开放）</span>
-          )}{" "}
-          · <Link href="/">返回首页</Link>
+          <Link href="/campus-entry">入校登记</Link> ·{" "}
+          <Link href="/">返回首页</Link>
         </p>
       </div>
     </main>

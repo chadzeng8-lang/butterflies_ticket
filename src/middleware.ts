@@ -6,7 +6,8 @@ function needsSessionRefresh(pathname: string) {
     pathname === "/" ||
     pathname === "/shows" ||
     pathname === "/personality" ||
-    pathname === "/campus-entry"
+    pathname === "/campus-entry" ||
+    pathname === "/privacy"
   ) {
     return false;
   }
@@ -34,6 +35,7 @@ export async function middleware(request: NextRequest) {
     "/admin/online-orders/export",
     "/admin/online-accounts",
     "/admin/online-checkin",
+    "/admin/campus-booking",
   ]);
   if (pathname.startsWith("/admin") && !allowedAdminPaths.has(pathname)) {
     const url = request.nextUrl.clone();

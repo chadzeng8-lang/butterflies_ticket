@@ -100,6 +100,9 @@ export default async function AccountPage({
                 <Link className="btn secondary" href="/admin/online-accounts">
                   管理账号
                 </Link>
+                <Link className="btn secondary" href="/admin/campus-booking">
+                  入校预约填写指南（旧）
+                </Link>
               </>
             )}
           </div>

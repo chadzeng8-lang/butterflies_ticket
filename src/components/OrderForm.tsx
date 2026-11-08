@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import { createOrderAction, type ActionState } from "@/app/actions/orders";
 import { BusyButton } from "@/components/BusyButton";
 import type { IdDocType } from "@/lib/attendees";
@@ -122,6 +123,10 @@ export function OrderForm({
       ))}
 
       {state.error && <div className="error">{state.error}</div>}
+      <p className="muted privacy-inline">
+        提交前请阅读<Link href="/privacy">个人信息收集声明</Link>
+        。姓名、电话、证件号、联系邮箱和付款截图只用于本次演出的票务、入校配合与按金退还。
+      </p>
       <BusyButton pending={pending} pendingLabel="提交中…" disabled={max < 1}>
         提交订单
       </BusyButton>
