@@ -2,30 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-const NOTICE_KEY = "butterflies-privacy-notice-v1";
 
 export function PrivacyNotice() {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  useEffect(() => {
-    try {
-      if (window.localStorage.getItem(NOTICE_KEY) === "seen") return;
-    } catch {
-      // 浏览器限制本地存储时，仍可显示提示。
-    }
-
-    dialogRef.current?.showModal();
-  }, []);
-
-  function dismissNotice() {
-    try {
-      window.localStorage.setItem(NOTICE_KEY, "seen");
-    } catch {
-      // 本地存储不可用时，仍可关闭提示。
-    }
-
-    dialogRef.current?.close();
+ useEffect(() => {
+  const dialog = dialogRef.current;
+  if (dialog && !dialog.open) {
+    dialog.showModal();
   }
+}, []);
+
+function dismissNotice() {
+  dialogRef.current?.close();
+}
 
   return (
     <>
