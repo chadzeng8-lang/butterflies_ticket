@@ -4,6 +4,7 @@ import { NavigationBusyBinder } from "@/components/NavigationProgress";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_NAME } from "@/lib/site";
 import "./globals.css";
+import { PrivacyNotice } from "@/components/PrivacyNotice";
 
 export const metadata: Metadata = {
   title: SITE_NAME,
@@ -24,6 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           {children}
           <SiteFooter />
+          <LocaleProvider>
+  {children}
+  <SiteFooter />
+  <PrivacyNotice />
+</LocaleProvider>
         </LocaleProvider>
       </body>
     </html>
