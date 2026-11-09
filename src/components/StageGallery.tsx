@@ -88,6 +88,7 @@ export function StageGallery() {
                     fill
                     sizes="(max-width: 720px) 92vw, min(720px, 48vw)"
                     quality={68}
+                    unoptimized={i === 0}
                     className="gallery-photo-img"
                     loading={isActive ? "lazy" : "eager"}
                   />
