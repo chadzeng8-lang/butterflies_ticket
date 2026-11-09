@@ -3,7 +3,7 @@ import { AccountForm } from "@/components/AccountForm";
 import { SignupVerifyToggle } from "@/components/SignupVerifyToggle";
 import { SiteHeader } from "@/components/SiteHeader";
 import { signOutAction } from "@/app/actions/account";
-import { getSignupSkipEmailConfirm } from "@/lib/dev-flags";
+import { getSignupSkipEmailConfirm } from "@/lib/signup-skip";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 import {
   createSupabaseServerClient,
@@ -39,6 +39,7 @@ export default async function AccountPage({
   } | null = null;
   let personalityResult = null;
   let personalityMigrationRequired = false;
+  let signupSkipEnabled = false;
   if (user) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
@@ -48,6 +49,9 @@ export default async function AccountPage({
     if (profileError) throw new Error("PROFILE_LOOKUP_FAILED");
     isAdmin = profile?.role === "admin";
     nickname = String(profile?.full_name || "").trim();
+    if (isAdmin) {
+      signupSkipEnabled = await getSignupSkipEmailConfirm(supabase);
+    }
     const records = await listSupabaseOrdersForCurrentUser();
     orderCount = records.length;
     ticketCount = records.reduce((total, record) => total + record.tickets.length, 0);
@@ -108,7 +112,7 @@ export default async function AccountPage({
               </>
             )}
           </div>
-          {isAdmin && process.env.NODE_ENV === "development" ? (
+          {isAdmin ? (
             <>
               {params.dev === "signup_skip_on" ? (
                 <p className="muted" style={{ marginTop: "0.75rem" }}>
@@ -120,8 +124,19 @@ export default async function AccountPage({
                   已恢复邮箱验证注册。
                 </p>
               ) : null}
+              {params.dev === "signup_skip_need_migration" ? (
+                <p className="muted" style={{ marginTop: "0.75rem" }}>
+                  开关保存失败：请先在 Supabase 执行迁移{" "}
+                  <code>20261110010000_app_settings_signup_skip.sql</code>。
+                </p>
+              ) : null}
+              {params.dev === "signup_skip_error" ? (
+                <p className="muted" style={{ marginTop: "0.75rem" }}>
+                  开关保存失败，请稍后再试。
+                </p>
+              ) : null}
               <SignupVerifyToggle
-                enabled={getSignupSkipEmailConfirm()}
+                enabled={signupSkipEnabled}
                 canUse={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)}
               />
             </>

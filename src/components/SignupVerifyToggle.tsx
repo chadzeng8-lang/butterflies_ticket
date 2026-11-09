@@ -21,20 +21,22 @@ export function SignupVerifyToggle({
   canUse,
 }: {
   enabled: boolean;
-  /** 本地开发且已配置 service role 时才真正能免验证 */
+  /** 已配置 SUPABASE_SERVICE_ROLE_KEY 时免验证才会真正生效 */
   canUse: boolean;
 }) {
   return (
     <article className="panel" style={{ marginTop: "1rem" }}>
-      <p className="eyebrow">LOCAL DEV</p>
+      <p className="eyebrow">ADMIN</p>
       <h2>注册邮箱验证</h2>
       <p className="muted" style={{ marginTop: "0.5rem" }}>
         当前：{enabled ? "免验证注册（不发验证信）" : "需要邮箱验证链接"}
-        。仅 localhost 生效；关掉后完整走验证信流程。
+        。管理员可随时切换；关掉后完整走验证信流程。
       </p>
-      {!canUse && enabled ? (
+      {!canUse ? (
         <p className="muted" style={{ marginTop: "0.5rem" }}>
-          开关已开，但仍需在 `.env.local` 配置 `SUPABASE_SERVICE_ROLE_KEY` 才能免验证注册。
+          免验证实际生效还需配置环境变量{" "}
+          <code>SUPABASE_SERVICE_ROLE_KEY</code>
+          （本地写在 `.env.local`，线上写在 Netlify，用完建议删掉）。
         </p>
       ) : null}
       <form action={toggleSignupSkipEmailConfirmAction} style={{ marginTop: "1rem" }}>
