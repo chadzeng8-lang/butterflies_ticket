@@ -39,7 +39,7 @@ export default async function ShowPage({
   const audience = showAudienceLabel(show.startsAt);
 
   return (
-    <main className="shell shell-narrow">
+    <main className="shell shell-narrow booking-detail">
       <SiteHeader />
       <section className="hero">
         <div className="chip" style={{ marginBottom: "1rem" }}>
