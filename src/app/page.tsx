@@ -189,7 +189,7 @@ export default async function HomePage() {
             width={768}
             height={768}
             sizes="190px"
-            quality={70}
+            unoptimized
             loading="lazy"
           />
         </div>
