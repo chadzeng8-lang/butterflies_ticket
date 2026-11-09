@@ -83,10 +83,44 @@ export function OrderForm({
   const [state, action, pending] = useActionState(createOrderAction, initial);
   const max = Math.min(5, Math.max(1, maxQuantity));
   const [quantity, setQuantity] = useState(1);
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
+
+  if (!privacyAccepted) {
+    return (
+      <div className="notice">
+        <strong>入校登记个人信息确认</strong>
+        <p>
+          登记时需为每位观众提供姓名、电话、证件类型和证件号，用于本次演出的
+          入校登记。订单还需填写联系邮箱。请先阅读
+          <Link href="/privacy" target="_blank" rel="noopener">
+            个人信息收集声明（在新窗口打开）
+          </Link>
+          。
+        </p>
+        <p>如暂不提供这些资料，可返回场次页，稍后再登记。</p>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setPrivacyAccepted(true)}
+          >
+            同意并继续
+          </button>
+          <Link className="btn secondary" href="/shows">
+            暂不登记
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form action={action} className="form" aria-busy={pending}>
       <input type="hidden" name="showId" value={showId} />
+      <form action={action} className="form" aria-busy={pending}>
+  <input type="hidden" name="showId" value={showId} />
+  <input type="hidden" name="admissionPrivacyConsent" value="accepted" />
+  <p className="muted" style={{ marginTop: 0 }}>
       <p className="muted" style={{ marginTop: 0 }}>
         按学校入校要求，需为每位观众填写姓名、电话与证件号。内地填身份证，香港填回乡证。此信息仅作入校登记，不参与付款确认。
       </p>
