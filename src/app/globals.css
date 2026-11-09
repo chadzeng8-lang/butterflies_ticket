@@ -3424,3 +3424,7 @@ html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
     justify-self: stretch;
   }
 }
+/* 首页「关于我们」的社团 Logo */
+.home-shell .about-logo img {
+  border-radius: 12px;
+}
