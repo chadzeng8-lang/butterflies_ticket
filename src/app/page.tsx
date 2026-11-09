@@ -182,7 +182,7 @@ export default async function HomePage() {
       </section>
 
       <section className="about-section" id="about">
-        <div className="about-logo">
+       <div className="about-logo" style={{ borderRadius: "12px", overflow: "hidden" }}>
           <Image
             src="/images/cu-musical-logo.jpg"
             alt="CU Musical 香港中文大学音乐剧社标志"
@@ -190,7 +190,7 @@ export default async function HomePage() {
             height={768}
             sizes="190px"
             unoptimized
-            loading="lazy"
+            loading="eager"
           />
         </div>
         <div className="about-copy">
