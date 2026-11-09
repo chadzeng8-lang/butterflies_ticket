@@ -115,12 +115,9 @@ export function OrderForm({
   }
 
   return (
-    <form action={action} className="form" aria-busy={pending}>
+       <form action={action} className="form" aria-busy={pending}>
       <input type="hidden" name="showId" value={showId} />
-      <form action={action} className="form" aria-busy={pending}>
-  <input type="hidden" name="showId" value={showId} />
-  <input type="hidden" name="admissionPrivacyConsent" value="accepted" />
-  <p className="muted" style={{ marginTop: 0 }}>
+      <input type="hidden" name="admissionPrivacyConsent" value="accepted" />
       <p className="muted" style={{ marginTop: 0 }}>
         按学校入校要求，需为每位观众填写姓名、电话与证件号。内地填身份证，香港填回乡证。此信息仅作入校登记，不参与付款确认。
       </p>
