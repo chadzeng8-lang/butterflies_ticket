@@ -28,6 +28,9 @@
 - 导航「入校指南」指向 `/campus-entry`：观众扫码入校登记（二维码暂未开放）+ 到场路线；旧版微信预约填写指南仅管理员可见，入口在账号页按钮 → `/admin/campus-booking`。
 - 干事操作见 `OPS.md`；本地开发与迁移概览见 `README.md`。
 - 观众入校页：`src/app/campus-entry/page.tsx`；旧版预约填写（管理员）：`src/app/admin/campus-booking/page.tsx`。
+- 管理员下单可超过每人/每单 5 张（仍受余票与单笔上限 100）：前端与 `createOrderAction` 已上线；**生产库还需执行**迁移 `20261109110000_admin_bypass_ticket_limit.sql`，否则 RPC 仍会拦管理员。
+- 本地备用收款码：`Wechat2.jpg` / `Alipay2.jpg`（gitignore），仅 `NODE_ENV=development` 时在付款页追加；勿提交图片、勿配进生产。
+- 本地注册免邮箱验证（管理员一键）：仅 `NODE_ENV=development` 时，管理员在 `/account` 可切换；状态存 `data/dev-flags.json`（gitignore）。开启后用 `SUPABASE_SERVICE_ROLE_KEY` 走 `auth.admin.createUser`（`email_confirm: true`）；关掉即恢复完整邮箱验证路径。勿把 service_role 配进 Netlify，勿改生产 Auth「Confirm email」。
 
 演出主要信息（修改之前先与用户确认是否有更新）：
 

@@ -1,7 +1,13 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getSignupSkipEmailConfirm,
+  setSignupSkipEmailConfirm,
+} from "@/lib/dev-flags";
+import { createSupabaseServerClient, getSupabaseUser } from "@/lib/supabase/server";
+import { createSupabaseServiceClient } from "@/lib/supabase/service";
 import { getPublicSiteUrl } from "@/lib/site-url";
 
 export type AccountActionState = { error?: string; message?: string };
@@ -11,6 +17,33 @@ function getSafeNextPath(value: FormDataEntryValue | null): string {
   return nextPath.startsWith("/") && !nextPath.startsWith("//") && !nextPath.startsWith("/account")
     ? nextPath
     : "/account";
+}
+
+async function requireLocalDevAdmin() {
+  if (process.env.NODE_ENV !== "development") {
+    redirect("/account");
+  }
+  const supabase = await createSupabaseServerClient();
+  const user = await getSupabaseUser(supabase);
+  if (!user) redirect("/account");
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (error) throw new Error("ADMIN_LOOKUP_FAILED");
+  if (profile?.role !== "admin") redirect("/account");
+  return supabase;
+}
+
+export async function toggleSignupSkipEmailConfirmAction(
+  formData: FormData,
+): Promise<void> {
+  await requireLocalDevAdmin();
+  const enabled = String(formData.get("enabled") || "") === "1";
+  setSignupSkipEmailConfirm(enabled);
+  revalidatePath("/account");
+  redirect(enabled ? "/account?dev=signup_skip_on" : "/account?dev=signup_skip_off");
 }
 
 export async function signInAction(
@@ -42,6 +75,39 @@ export async function signUpAction(
   if (password.length < 8) return { error: "密码至少需要 8 个字符。" };
 
   const supabase = await createSupabaseServerClient();
+
+  // 管理员在账号页一键开启后：用 service role 直接创建已验证账号；关闭后完整走下方邮箱验证注册。
+  if (getSignupSkipEmailConfirm()) {
+    const admin = createSupabaseServiceClient();
+    if (!admin) {
+      return {
+        error:
+          "已开启免验证注册，请在 .env.local 配置 SUPABASE_SERVICE_ROLE_KEY；或到账号页关掉开关恢复邮箱验证。",
+      };
+    }
+    const { error: createError } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName },
+    });
+    if (createError) {
+      const msg = createError.message.toLowerCase();
+      if (msg.includes("already") || msg.includes("registered")) {
+        return { error: "该邮箱已注册，请直接登录。" };
+      }
+      return { error: "本地注册失败，请稍后再试。" };
+    }
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError) {
+      return { error: "账号已创建，但自动登录失败，请手动登录。" };
+    }
+    redirect(nextPath);
+  }
+
   const siteUrl = getPublicSiteUrl();
   if (!siteUrl) return { error: "注册设置未完成，请联系管理员。" };
   const { data, error } = await supabase.auth.signUp({

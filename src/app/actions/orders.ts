@@ -51,11 +51,18 @@ export async function createOrderAction(
     if (!Number.isInteger(showId) || showId < 1) {
       return { error: "场次无效。" };
     }
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) {
-      return { error: "每笔订单最多购买 5 张票。" };
-    }
     if (!contactExtra) {
       return { error: "请填写邮箱。" };
+    }
+
+    const isAdmin = await isCurrentUserTicketingAdmin(supabase);
+    const maxQuantity = isAdmin ? 100 : 5;
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > maxQuantity) {
+      return {
+        error: isAdmin
+          ? "票数无效。"
+          : "每笔订单最多购买 5 张票。",
+      };
     }
 
     const parsed = parseAttendeesFromFormData(formData, quantity);
@@ -64,7 +71,6 @@ export async function createOrderAction(
     const buyerName = attendees[0].fullName;
     const phone = attendees[0].phone;
 
-    const isAdmin = await isCurrentUserTicketingAdmin(supabase);
     if (!isTicketSaleOpen() && !isAdmin) {
       return { error: ticketSaleClosedMessage() };
     }
@@ -108,7 +114,7 @@ export async function createOrderAction(
     const map: Record<string, string> = {
       SHOW_NOT_FOUND: "场次不存在。",
       SHOW_OFF_SALE: "该场次已停售。",
-      BAD_QUANTITY: "每笔订单最多购买 5 张票。",
+      BAD_QUANTITY: "票数无效或超出允许上限。",
       SOLD_OUT: "余票不足，请减少票数或换场。",
       AUTH_REQUIRED: "请先登录邮箱账号再登记。",
       PERSON_TICKET_LIMIT: "同一账号最多登记 5 张票。",

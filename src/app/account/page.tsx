@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { AccountForm } from "@/components/AccountForm";
+import { SignupVerifyToggle } from "@/components/SignupVerifyToggle";
 import { SiteHeader } from "@/components/SiteHeader";
 import { signOutAction } from "@/app/actions/account";
+import { getSignupSkipEmailConfirm } from "@/lib/dev-flags";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 import {
   createSupabaseServerClient,
@@ -15,7 +17,7 @@ export const dynamic = "force-dynamic";
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; dev?: string }>;
 }) {
   const params = await searchParams;
   const candidate = params.next || "";
@@ -106,6 +108,24 @@ export default async function AccountPage({
               </>
             )}
           </div>
+          {isAdmin && process.env.NODE_ENV === "development" ? (
+            <>
+              {params.dev === "signup_skip_on" ? (
+                <p className="muted" style={{ marginTop: "0.75rem" }}>
+                  已开启免验证注册。
+                </p>
+              ) : null}
+              {params.dev === "signup_skip_off" ? (
+                <p className="muted" style={{ marginTop: "0.75rem" }}>
+                  已恢复邮箱验证注册。
+                </p>
+              ) : null}
+              <SignupVerifyToggle
+                enabled={getSignupSkipEmailConfirm()}
+                canUse={Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)}
+              />
+            </>
+          ) : null}
         </article>
 
         <section className="account-section">

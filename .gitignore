@@ -4,9 +4,16 @@ data/*.db
 data/*.db-*
 data/store.json
 data/store.json.tmp
+data/dev-flags.json
 data/uploads/*
 !data/uploads/.gitkeep
 .env
 .env.local
 *.log
 .DS_Store
+
+# 本地备用收款码（不提交、不部署）
+public/Wechat2.jpg
+public/Alipay2.jpg
+/wechat2.jpg
+/支付宝2.jpg

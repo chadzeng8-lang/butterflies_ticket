@@ -38,6 +38,30 @@ export default async function ShowPage({
   const canRegister = saleOpen || isAdmin;
   const audience = showAudienceLabel(show.startsAt);
 
+  let remainingSeats = show.capacity;
+  if (canRegister && user) {
+    const activeStatuses = [
+      "pending_payment",
+      "pending_confirm",
+      "issued",
+      "checked_in",
+      "deposit_refunded",
+    ] as const;
+    const { data: heldRows } = await supabase
+      .from("orders")
+      .select("quantity")
+      .eq("show_id", show.id)
+      .in("status", [...activeStatuses]);
+    const held = (heldRows || []).reduce(
+      (sum, row) => sum + Number(row.quantity || 0),
+      0,
+    );
+    remainingSeats = Math.max(0, show.capacity - held);
+  }
+  const maxQuantity = isAdmin
+    ? Math.min(100, Math.max(1, remainingSeats || 1))
+    : Math.min(5, Math.max(1, remainingSeats || 1));
+
   return (
     <main className="shell shell-narrow booking-detail">
       <SiteHeader />
@@ -112,8 +136,9 @@ export default async function ShowPage({
               )}
               <OrderForm
                 showId={show.id}
-                maxQuantity={5}
+                maxQuantity={maxQuantity}
                 accountEmail={user.email || ""}
+                isAdmin={isAdmin}
               />
             </>
           )}

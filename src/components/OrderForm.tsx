@@ -75,15 +75,17 @@ export function OrderForm({
   showId,
   maxQuantity,
   accountEmail,
+  isAdmin = false,
 }: {
   showId: number;
   maxQuantity: number;
   accountEmail: string;
+  isAdmin?: boolean;
 }) {
   const [state, action, pending] = useActionState(createOrderAction, initial);
-  const max = Math.min(5, Math.max(1, maxQuantity));
+  const max = Math.max(1, Math.min(isAdmin ? 100 : 5, maxQuantity));
   const [quantity, setQuantity] = useState(1);
-    const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   if (!privacyAccepted) {
     return (
@@ -115,14 +117,14 @@ export function OrderForm({
   }
 
   return (
-       <form action={action} className="form" aria-busy={pending}>
+    <form action={action} className="form" aria-busy={pending}>
       <input type="hidden" name="showId" value={showId} />
       <input type="hidden" name="admissionPrivacyConsent" value="accepted" />
       <p className="muted" style={{ marginTop: 0 }}>
         按学校入校要求，需为每位观众填写姓名、电话与证件号。内地填身份证，香港填回乡证。此信息仅作入校登记，不参与付款确认。
       </p>
       <label>
-        票数（每人最多 5 张）
+        {isAdmin ? "票数（管理员可按余票登记）" : "票数（每人最多 5 张）"}
         <select
           name="quantity"
           value={quantity}
