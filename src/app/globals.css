@@ -8,6 +8,14 @@
 }
 
 @font-face {
+  font-family: "TicketSong";
+  src: url("/fonts/sanji-zhunrou-song.ttf") format("truetype");
+  font-display: swap;
+  font-weight: 100 900;
+  unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+20000-2FA1F;
+}
+
+@font-face {
   font-family: "TicketTraditional";
   src: url("/fonts/noto-serif-tc-regular.otf") format("opentype");
   font-style: normal;
@@ -58,7 +66,7 @@ a[href*="netlify.com"][style*="position: fixed"] {
   --success-soft: rgba(159, 214, 194, 0.12);
   --radius: 2px;
   --radius-sm: 2px;
-  --font-cjk: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC";
+  --font-cjk: "TicketSimplified";
   --font-display: var(--font-cjk), "Avenir Next Condensed", "Bahnschrift", "PingFang SC", "Hiragino Sans GB",
     "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --font-body: var(--font-cjk), "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB",
@@ -3305,9 +3313,9 @@ textarea {
   text-wrap: pretty;
 }
 
-/* 简体首页标题优先用中宋，正文沿用黑体 */
+/* 简体首页标题用网页宋体，避免依赖本机「华文中宋」 */
 html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
-  font-family: "STZhongsong", "华文中宋", "Songti SC", "Noto Serif SC", SimSun, serif;
+  font-family: "TicketSong", "TicketSimplified", "Songti SC", "Noto Serif SC", serif;
   font-weight: 400;
 }
 
