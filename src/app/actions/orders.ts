@@ -37,6 +37,10 @@ export async function createOrderAction(
     const supabase = await createSupabaseServerClient();
     const user = await getSupabaseUser(supabase);
     if (!user) redirect(`/account?next=/shows/${formData.get("showId")}`);
+    if (formData.get("admissionPrivacyConsent") !== "accepted") {
+      return { error: "请刷新页面，阅读入校登记个人信息说明并确认后再提交。" };
+    }
+
 
     const showId = Number(formData.get("showId"));
     const contactExtra = String(formData.get("contactExtra") || "")
