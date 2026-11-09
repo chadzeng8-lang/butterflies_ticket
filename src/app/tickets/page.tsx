@@ -53,7 +53,7 @@ export default async function TicketsPage() {
   }
 
   return (
-    <main className="shell shell-narrow">
+    <main className="shell shell-narrow ticket-wallet">
       <SiteHeader />
       <section className="hero">
         <h1>票夹</h1>
@@ -66,7 +66,7 @@ export default async function TicketsPage() {
 
       {user ? (
         <section className="grid">
-          <div className="row" style={{ justifyContent: "space-between" }}>
+        <div className="row ticket-wallet-heading">
             <h2>我的订单与购票编号</h2>
             <form action={signOutAction}>
               <button className="btn secondary" type="submit">登出</button>
@@ -79,7 +79,7 @@ export default async function TicketsPage() {
           )}
         </section>
       ) : (
-        <div className="grid">
+       <div className="grid ticket-wallet-access">
           <article className="panel">
             <h2>登录查看账号订单</h2>
             <p className="muted">登录后可直接查看关联到账号的订单与购票编号。</p>
