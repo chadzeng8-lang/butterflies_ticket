@@ -3429,3 +3429,80 @@ html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
   border-radius: 12px;
   overflow: hidden;
 }
+
+/* 场次详情：收紧阅读宽度 */
+.booking-detail {
+  max-width: 52rem;
+}
+
+.booking-detail .hero h1 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.booking-detail .panel {
+  min-width: 0;
+  border-radius: 12px;
+}
+
+/* 隐私确认：用中性色区分按金说明 */
+.booking-detail .booking-consent {
+  padding: 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--ink);
+  line-height: 1.65;
+}
+
+.booking-detail .booking-consent strong {
+  color: var(--ink);
+}
+
+.booking-detail :is(.booking-consent, .privacy-inline) a[href="/privacy"] {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.booking-detail .booking-consent .btn {
+  flex: 1 1 10rem;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+
+.booking-detail .booking-consent .btn:hover {
+  background: var(--accent-soft);
+}
+
+/* 登记表：统一输入框和按钮 */
+.booking-detail .btn,
+.booking-detail .form :is(input:not([type="hidden"]), select) {
+  min-height: 2.75rem;
+  border-radius: 8px;
+}
+
+.booking-detail .form :is(input:not([type="hidden"]), select) {
+  width: 100%;
+  min-width: 0;
+  font-size: 1rem;
+}
+
+.booking-detail :is(a, button, input, select):focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 2px;
+}
+
+.booking-detail .attendee-fieldset {
+  min-width: 0;
+}
+
+@media (min-width: 720px) {
+  .booking-detail .attendee-fieldset {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+  }
+}
