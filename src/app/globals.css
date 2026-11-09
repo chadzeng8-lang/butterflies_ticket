@@ -3506,3 +3506,54 @@ html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
     gap: 0.75rem 1rem;
   }
 }
+/* 票夹：标题与操作入口 */
+.ticket-wallet .hero h1 {
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+.ticket-wallet .hero p {
+  max-inline-size: 40em;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.ticket-wallet .ticket-wallet-heading {
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ticket-wallet :is(.ticket-wallet-heading, .ticket-wallet-access) h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.ticket-wallet .ticket-wallet-access {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+}
+
+.ticket-wallet .ticket-wallet-access > .panel {
+  min-width: 0;
+  border-radius: 12px;
+}
+
+.ticket-wallet :is(.ticket-wallet-access, .ticket-wallet-heading) .btn {
+  min-height: 2.75rem;
+  border-radius: 8px;
+}
+
+.ticket-wallet .btn:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 2px;
+}
+
+@media (min-width: 800px) {
+  .ticket-wallet .ticket-wallet-access {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
