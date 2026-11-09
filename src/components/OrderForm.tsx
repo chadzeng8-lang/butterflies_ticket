@@ -87,7 +87,7 @@ export function OrderForm({
 
   if (!privacyAccepted) {
     return (
-      <div className="notice">
+      <div className="notice booking-consent">
         <strong>入校登记个人信息确认</strong>
         <p>
           登记时需为每位观众提供姓名、电话、证件类型和证件号，用于本次演出的
