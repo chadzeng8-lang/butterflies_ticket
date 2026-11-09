@@ -25,11 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           {children}
           <SiteFooter />
-          <LocaleProvider>
-  {children}
-  <SiteFooter />
-  <PrivacyNotice />
-</LocaleProvider>
+          <PrivacyNotice />
         </LocaleProvider>
       </body>
     </html>
