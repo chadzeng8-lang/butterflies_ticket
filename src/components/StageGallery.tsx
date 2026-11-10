@@ -4,31 +4,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 const STAGE_PHOTOS = [
-  { src: "/images/stage-v2-01.jpg", alt: "《蝶》舞台剧照 1" },
-  { src: "/images/stage-v2-02.jpg", alt: "《蝶》舞台剧照 2" },
-  { src: "/images/stage-v2-03.jpg", alt: "《蝶》舞台剧照 3" },
-  { src: "/images/stage-v2-04.jpg", alt: "《蝶》舞台剧照 4" },
-  { src: "/images/stage-v2-05.jpg", alt: "《蝶》舞台剧照 5" },
-  { src: "/images/stage-v2-06.jpg", alt: "《蝶》舞台剧照 6" },
-  { src: "/images/stage-v2-07.jpg", alt: "《蝶》舞台剧照 7" },
-  { src: "/images/stage-v2-08.jpg", alt: "《蝶》舞台剧照 8" },
-  { src: "/images/stage-v2-09.jpg", alt: "《蝶》舞台剧照 9" },
-  { src: "/images/stage-v2-10.jpg", alt: "《蝶》舞台剧照 10" },
-  { src: "/images/stage-v2-11.jpg", alt: "《蝶》舞台剧照 11" },
-  { src: "/images/stage-v2-12.jpg", alt: "《蝶》舞台剧照 12" },
-  { src: "/images/stage-v2-13.jpg", alt: "《蝶》舞台剧照 13" },
-  { src: "/images/stage-v2-14.jpg", alt: "《蝶》舞台剧照 14" },
-  { src: "/images/stage-v2-15.jpg", alt: "《蝶》舞台剧照 15" },
-  { src: "/images/stage-v2-16.jpg", alt: "《蝶》舞台剧照 16" },
-  { src: "/images/stage-v2-17.jpg", alt: "《蝶》舞台剧照 17" },
-  { src: "/images/stage-v2-18.jpg", alt: "《蝶》舞台剧照 18" },
-  { src: "/images/stage-v2-19.jpg", alt: "《蝶》舞台剧照 19" },
-  { src: "/images/stage-v2-20.jpg", alt: "《蝶》舞台剧照 20" },
-  { src: "/images/stage-v2-21.jpg", alt: "《蝶》舞台剧照 21" },
-  { src: "/images/stage-v2-22.jpg", alt: "《蝶》舞台剧照 22" },
-  { src: "/images/stage-v2-23.jpg", alt: "《蝶》舞台剧照 23" },
+  { src: "/images/stage-01.jpg", alt: "《蝶》舞台剧照 1" },
+  { src: "/images/stage-02.jpg", alt: "《蝶》舞台剧照 2" },
+  { src: "/images/stage-03.jpg", alt: "《蝶》舞台剧照 3" },
+  { src: "/images/stage-04.jpg", alt: "《蝶》舞台剧照 4" },
 ] as const;
-
 
 const TOTAL = STAGE_PHOTOS.length;
 

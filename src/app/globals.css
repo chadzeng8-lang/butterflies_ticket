@@ -19,7 +19,16 @@
   font-family: "TicketTraditional";
   src: url("/fonts/noto-serif-tc-regular.otf") format("opentype");
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: 100 500;
+  font-display: swap;
+  unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+20000-2FA1F;
+}
+
+@font-face {
+  font-family: "TicketTraditional";
+  src: url("/fonts/noto-serif-tc-bold.otf") format("opentype");
+  font-style: normal;
+  font-weight: 600 900;
   font-display: swap;
   unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+20000-2FA1F;
 }
@@ -66,16 +75,21 @@ a[href*="netlify.com"][style*="position: fixed"] {
   --success-soft: rgba(159, 214, 194, 0.12);
   --radius: 2px;
   --radius-sm: 2px;
-  --font-cjk: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC";
-  --font-display: var(--font-cjk), "Avenir Next Condensed", "Bahnschrift", "PingFang SC", "Hiragino Sans GB",
-    "Noto Sans SC", "Microsoft YaHei", sans-serif;
-  --font-body: var(--font-cjk), "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+  /* 简体标题与正文均用 public/fonts/simplified.ttf */
+  --font-cjk: "TicketSimplified";
+  --font-display: "TicketSimplified", "Avenir Next Condensed", "Bahnschrift",
+    "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-body: "TicketSimplified", "Avenir Next", "Segoe UI", "PingFang SC", "Hiragino Sans GB",
     "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html[data-locale="hk"] {
   --font-cjk: "TicketTraditional";
+  --font-display: "TicketTraditional", "Avenir Next Condensed", "Bahnschrift",
+    "PingFang TC", "Hiragino Sans CNS", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --font-body: "TicketTraditional", "Avenir Next", "Segoe UI", "PingFang TC", "Hiragino Sans CNS",
+    "Noto Sans TC", "Microsoft JhengHei", sans-serif;
 }
 
 * {
@@ -3313,9 +3327,9 @@ textarea {
   text-wrap: pretty;
 }
 
-/* 简体首页标题用网页宋体，避免依赖本机「华文中宋」 */
+/* 简体首页标题用 simplified.ttf */
 html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
-  font-family: "TicketSong", "TicketSimplified", "Songti SC", "Noto Serif SC", serif;
+  font-family: "TicketSimplified", "Songti SC", "Noto Serif SC", serif;
   font-weight: 400;
 }
 
@@ -3345,7 +3359,7 @@ html:not([data-locale="hk"]) .home-shell :is(h1, h2) {
   border-radius: 8px;
 }
 
-/* 页头音乐剧社标志和剧照左右箭头 */
+/* 页头音乐剧社标志 */
 .brand-logo,
 .home-shell .stage-gallery-nav {
   border-radius: 50%;

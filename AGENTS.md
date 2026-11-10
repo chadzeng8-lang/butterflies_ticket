@@ -13,7 +13,7 @@
 
 ## 当前状态与接手事项
 
-- 首页以故事 / 关于 / 剧照时间线 / 演职为主（编号 01–04）；购票相关（报名步骤、地图、场次列表、观演须知）在 `/shows`。首页 CTA 与导航「购票」都指向 `/shows`。
+- 首页以故事 / 关于 / 剧照与时间线 / 演职为主（编号 01–04）；购票相关（报名步骤、地图、场次列表、观演须知）在 `/shows`。首页 CTA 与导航「购票」都指向 `/shows`。
 - 左上角品牌文字由 `src/lib/site.ts` 的 `SITE_NAME` 控制，不再读取 Netlify 自动生成的站点名。
 - 用户要求延续参考 Strand 的简洁视觉、减少大圆角；全站支持简繁切换。
 - 页脚「关注」：Instagram / 小红书 / 微信公众号二维码点击放大；有网页主页的平台在缩略图下与弹窗内显示链接（`FooterQrZoom`）。
@@ -74,7 +74,7 @@ git status --short
 - 根布局与简繁转换 Provider：`src/app/layout.tsx`、`src/components/LocaleProvider.tsx`
 - 网站导航：`src/components/SiteHeader.tsx`、`src/components/SiteHeaderClient.tsx`
 - 页脚与社交媒体二维码：`src/components/SiteFooter.tsx`、`src/components/FooterQrZoom.tsx`
-- 首页剧照轮播：`src/components/StageGallery.tsx`（固定高度黑底、`object-fit: contain`，不拉伸）
+- 首页剧照轮播：`src/components/StageGallery.tsx`（`public/images/stage-01.jpg`–`stage-04.jpg`，固定高度黑底、`object-fit: contain`）
 - 首页图片与 Logo、观演群二维码：`public/images/`
 - 字体文件：`public/fonts/`
 
