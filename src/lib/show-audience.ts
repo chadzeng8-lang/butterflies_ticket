@@ -21,6 +21,11 @@ export function showAudienceLabel(startsAtIso: string): string | null {
   return null;
 }
 
+/** 11.22 校内场：观众填学号，不填身份证/回乡证 */
+export function showUsesStudentId(startsAtIso: string): boolean {
+  return hkDateKey(startsAtIso) === "2026-11-22";
+}
+
 /** 首页等汇总处的简短说明（两行分别用） */
 export const SHOW_AUDIENCE_SUMMARY_LINES = [
   `11.21 ${SHOW_AUDIENCE_PUBLIC}`,

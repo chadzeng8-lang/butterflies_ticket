@@ -14,8 +14,14 @@ import {
 import {
   attendeesToJson,
   parseAttendeesFromFormData,
+  type AttendeeIdMode,
 } from "@/lib/attendees";
+import { showUsesStudentId } from "@/lib/show-audience";
 import { isTicketSaleOpen, ticketSaleClosedMessage } from "@/lib/ticket-sale";
+
+function resolveIdMode(startsAt: string | null | undefined): AttendeeIdMode {
+  return startsAt && showUsesStudentId(startsAt) ? "student_id" : "id_card";
+}
 
 export type ActionState = { error?: string; ok?: string };
 
@@ -65,7 +71,16 @@ export async function createOrderAction(
       };
     }
 
-    const parsed = parseAttendeesFromFormData(formData, quantity);
+    const { data: showRow, error: showLookupError } = await supabase
+      .from("shows")
+      .select("starts_at")
+      .eq("id", showId)
+      .maybeSingle();
+    if (showLookupError) throw new Error(showLookupError.message);
+    if (!showRow) return { error: "场次不存在。" };
+    const idMode = resolveIdMode(showRow.starts_at);
+
+    const parsed = parseAttendeesFromFormData(formData, quantity, idMode);
     if (parsed.error) return { error: parsed.error };
     const attendees = parsed.attendees;
     const buyerName = attendees[0].fullName;
@@ -122,8 +137,8 @@ export async function createOrderAction(
       ORDER_CREATE_FAILED: "创建订单失败，请稍后再试。",
       ATTENDEES_REQUIRED: "请填写全部观众信息。",
       ATTENDEE_COUNT_MISMATCH: "观众人数须与票数一致。",
-      ATTENDEE_DETAILS_REQUIRED: "请完整填写每位观众的姓名、电话与证件号。",
-      BAD_ID_DOC_TYPE: "证件类型无效。",
+      ATTENDEE_DETAILS_REQUIRED: "请完整填写每位观众的姓名、电话与证件号或学号。",
+      BAD_ID_DOC_TYPE: "证件类型或学号类型无效。",
     };
     return { error: map[msg] || "下单失败，请稍后重试。" };
   }
@@ -141,11 +156,27 @@ export async function updateOrderAttendeesAction(
     const code = String(formData.get("code") || "").trim().toUpperCase();
     const quantity = Number(formData.get("quantity") || "0");
     if (!code) return { error: "订单无效。" };
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) {
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 100) {
       return { error: "票数无效。" };
     }
 
-    const parsed = parseAttendeesFromFormData(formData, quantity);
+    const { data: orderRow, error: orderLookupError } = await supabase
+      .from("orders")
+      .select("id, show_id, shows(starts_at)")
+      .eq("code", code)
+      .maybeSingle();
+    if (orderLookupError) throw new Error(orderLookupError.message);
+    if (!orderRow) return { error: "订单不存在。" };
+    const showRelation = orderRow.shows as
+      | { starts_at?: string }
+      | { starts_at?: string }[]
+      | null;
+    const startsAt = Array.isArray(showRelation)
+      ? showRelation[0]?.starts_at
+      : showRelation?.starts_at;
+    const idMode = resolveIdMode(startsAt);
+
+    const parsed = parseAttendeesFromFormData(formData, quantity, idMode);
     if (parsed.error) return { error: parsed.error };
 
     const { error } = await supabase.rpc("save_order_attendees", {
@@ -167,8 +198,8 @@ export async function updateOrderAttendeesAction(
       ORDER_CLOSED: "订单已取消或过期，无法修改。",
       ATTENDEES_REQUIRED: "请填写全部观众信息。",
       ATTENDEE_COUNT_MISMATCH: "观众人数须与票数一致。",
-      ATTENDEE_DETAILS_REQUIRED: "请完整填写每位观众的姓名、电话与证件号。",
-      BAD_ID_DOC_TYPE: "证件类型无效。",
+      ATTENDEE_DETAILS_REQUIRED: "请完整填写每位观众的姓名、电话与证件号或学号。",
+      BAD_ID_DOC_TYPE: "证件类型或学号类型无效。",
       AUTH_REQUIRED: "请先登录。",
     };
     return { error: map[msg] || "保存失败，请稍后重试。" };

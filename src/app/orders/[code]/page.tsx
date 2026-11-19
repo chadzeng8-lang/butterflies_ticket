@@ -9,6 +9,7 @@ import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { depositAmounts } from "@/lib/payment-methods";
 import { depositPerPersonLabel, paymentTransferNote } from "@/lib/pricing-copy";
+import { showUsesStudentId } from "@/lib/show-audience";
 import { getSupabaseOrderWithShow } from "@/lib/supabase/orders";
 import { loadPurchaseNumbersForShows } from "@/lib/supabase/purchase-numbers";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
@@ -165,6 +166,9 @@ export default async function OrderPage({
             orderCode={order.code}
             quantity={order.quantity}
             attendees={attendees}
+            idMode={
+              showUsesStudentId(order.showStartsAt) ? "student_id" : "id_card"
+            }
           />
         ) : null}
 

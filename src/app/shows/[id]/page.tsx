@@ -6,7 +6,7 @@ import { isCurrentUserTicketingAdmin } from "@/lib/admin";
 import { formatShowTime } from "@/lib/format";
 import { centsToCny } from "@/lib/money";
 import { audiencePricingSummary, depositRuleNotice } from "@/lib/pricing-copy";
-import { showAudienceLabel } from "@/lib/show-audience";
+import { showAudienceLabel, showUsesStudentId } from "@/lib/show-audience";
 import {
   createSupabaseServerClient,
   getSupabaseUser,
@@ -139,6 +139,7 @@ export default async function ShowPage({
                 maxQuantity={maxQuantity}
                 accountEmail={user.email || ""}
                 isAdmin={isAdmin}
+                idMode={showUsesStudentId(show.startsAt) ? "student_id" : "id_card"}
               />
             </>
           )}

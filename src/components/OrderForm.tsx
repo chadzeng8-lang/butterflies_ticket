@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { createOrderAction, type ActionState } from "@/app/actions/orders";
 import { BusyButton } from "@/components/BusyButton";
-import type { IdDocType } from "@/lib/attendees";
+import type { AttendeeIdMode, IdDocType } from "@/lib/attendees";
 import { ID_DOC_TYPE_LABEL } from "@/lib/attendees";
 
 const initial: ActionState = {};
@@ -12,13 +12,17 @@ const initial: ActionState = {};
 function AttendeeFields({
   index,
   pending,
+  idMode,
   defaultDocType = "mainland_id",
 }: {
   index: number;
   pending: boolean;
+  idMode: AttendeeIdMode;
   defaultDocType?: IdDocType;
 }) {
-  const [docType, setDocType] = useState<IdDocType>(defaultDocType);
+  const [docType, setDocType] = useState<IdDocType>(
+    idMode === "student_id" ? "student_id" : defaultDocType,
+  );
 
   return (
     <fieldset className="attendee-fieldset" disabled={pending}>
@@ -28,7 +32,9 @@ function AttendeeFields({
         <input
           name={`attendee_${index}_name`}
           required
-          placeholder="与证件一致的姓名"
+          placeholder={
+            idMode === "student_id" ? "与学籍资料一致的姓名" : "与证件一致的姓名"
+          }
           autoComplete="name"
         />
       </label>
@@ -42,31 +48,54 @@ function AttendeeFields({
           autoComplete="tel"
         />
       </label>
-      <label>
-        证件类型
-        <select
-          name={`attendee_${index}_id_doc_type`}
-          required
-          value={docType}
-          onChange={(event) => setDocType(event.target.value as IdDocType)}
-        >
-          <option value="mainland_id">{ID_DOC_TYPE_LABEL.mainland_id}</option>
-          <option value="hk_home_return">{ID_DOC_TYPE_LABEL.hk_home_return}</option>
-        </select>
-      </label>
-      <label>
-        证件号
-        <input
-          name={`attendee_${index}_id_number`}
-          required
-          placeholder={
-            docType === "mainland_id"
-              ? "内地居民身份证号码"
-              : "港澳居民来往内地通行证（回乡证）号码"
-          }
-          autoComplete="off"
-        />
-      </label>
+      {idMode === "student_id" ? (
+        <>
+          <input
+            type="hidden"
+            name={`attendee_${index}_id_doc_type`}
+            value="student_id"
+          />
+          <label>
+            学号
+            <input
+              name={`attendee_${index}_id_number`}
+              required
+              placeholder="香港中文大学 / 香港中文大学（深圳）学号"
+              autoComplete="off"
+            />
+          </label>
+        </>
+      ) : (
+        <>
+          <label>
+            证件类型
+            <select
+              name={`attendee_${index}_id_doc_type`}
+              required
+              value={docType}
+              onChange={(event) => setDocType(event.target.value as IdDocType)}
+            >
+              <option value="mainland_id">{ID_DOC_TYPE_LABEL.mainland_id}</option>
+              <option value="hk_home_return">
+                {ID_DOC_TYPE_LABEL.hk_home_return}
+              </option>
+            </select>
+          </label>
+          <label>
+            证件号
+            <input
+              name={`attendee_${index}_id_number`}
+              required
+              placeholder={
+                docType === "mainland_id"
+                  ? "内地居民身份证号码"
+                  : "港澳居民来往内地通行证（回乡证）号码"
+              }
+              autoComplete="off"
+            />
+          </label>
+        </>
+      )}
     </fieldset>
   );
 }
@@ -76,11 +105,13 @@ export function OrderForm({
   maxQuantity,
   accountEmail,
   isAdmin = false,
+  idMode = "id_card",
 }: {
   showId: number;
   maxQuantity: number;
   accountEmail: string;
   isAdmin?: boolean;
+  idMode?: AttendeeIdMode;
 }) {
   const [state, action, pending] = useActionState(createOrderAction, initial);
   const max = Math.max(1, Math.min(isAdmin ? 100 : 5, maxQuantity));
@@ -92,8 +123,9 @@ export function OrderForm({
       <div className="notice booking-consent">
         <strong>入校登记个人信息确认</strong>
         <p>
-          登记时需为每位观众提供姓名、电话、证件类型和证件号，用于本次演出的
-          入校登记。订单还需填写联系邮箱。请先阅读
+          {idMode === "student_id"
+            ? "登记时需为每位观众提供姓名、电话和学号，用于本次演出的入校登记。订单还需填写联系邮箱。请先阅读"
+            : "登记时需为每位观众提供姓名、电话、证件类型和证件号，用于本次演出的入校登记。订单还需填写联系邮箱。请先阅读"}
           <Link href="/privacy" target="_blank" rel="noopener">
             个人信息收集声明（在新窗口打开）
           </Link>
@@ -121,7 +153,9 @@ export function OrderForm({
       <input type="hidden" name="showId" value={showId} />
       <input type="hidden" name="admissionPrivacyConsent" value="accepted" />
       <p className="muted" style={{ marginTop: 0 }}>
-        按学校入校要求，需为每位观众填写姓名、电话与证件号。内地填身份证，香港填回乡证。此信息仅作入校登记，不参与付款确认。
+        {idMode === "student_id"
+          ? "本场为校内场，需为每位观众填写姓名、电话与学号。此信息仅作入校登记，不参与付款确认。"
+          : "按学校入校要求，需为每位观众填写姓名、电话与证件号。内地填身份证，香港填回乡证。此信息仅作入校登记，不参与付款确认。"}
       </p>
       <label>
         {isAdmin ? "票数（管理员可按余票登记）" : "票数（每人最多 5 张）"}
@@ -152,13 +186,20 @@ export function OrderForm({
       </label>
 
       {Array.from({ length: quantity }, (_, i) => i + 1).map((index) => (
-        <AttendeeFields key={index} index={index} pending={pending} />
+        <AttendeeFields
+          key={index}
+          index={index}
+          pending={pending}
+          idMode={idMode}
+        />
       ))}
 
       {state.error && <div className="error">{state.error}</div>}
       <p className="muted privacy-inline">
         提交前请阅读<Link href="/privacy">个人信息收集声明</Link>
-        。姓名、电话、证件号、联系邮箱和付款截图只用于本次演出的票务、入校配合与按金退还。
+        {idMode === "student_id"
+          ? "。姓名、电话、学号、联系邮箱和付款截图只用于本次演出的票务、入校配合与按金退还。"
+          : "。姓名、电话、证件号、联系邮箱和付款截图只用于本次演出的票务、入校配合与按金退还。"}
       </p>
       <BusyButton pending={pending} pendingLabel="提交中…" disabled={max < 1}>
         提交订单
