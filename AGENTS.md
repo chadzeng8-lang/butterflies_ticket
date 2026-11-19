@@ -25,7 +25,7 @@
 - 出票后对用户展示「购票编号」（每场从 1 起），不展示票码/二维码；入场核对编号与手机号。编号计算见 `get_order_purchase_numbers`（迁移 `20261106120000_order_purchase_numbers.sql`）。
 - 转账备注为**购票编号及手机号**（不是旧订单号）；订单联系手机默认取首位观众电话。购票编号在下单后即可按场次顺序计算，付款页会同时展示编号与手机。
 - 入校政策观众信息：每位观众姓名 / 电话；11.21 填证件号（内地身份证或香港回乡证），11.22 校内场改填学号（`id_doc_type = student_id`）。报名时填写，不参与付款确认；订单详情可编辑。表 `order_attendees`，迁移 `20261106160000_order_attendees.sql` + `20261119110000_attendee_student_id.sql`，RPC `save_order_attendees`。**生产库还需执行**后者，否则学号无法写入。
-- 导航「入校指南」指向 `/campus-entry`：观众扫码入校登记（二维码暂未开放）+ 到场路线；旧版微信预约填写指南仅管理员可见，入口在账号页按钮 → `/admin/campus-booking`。
+- 导航「入校指南」指向 `/campus-entry`：11.21 周六公众场由工作人员统一提交入校预约，观众可用学校查询页核对（`https://visitcampus.cuhk.edu.cn/h5/admission-tours-q`）+ 到场路线；旧版微信预约填写指南仅管理员可见，入口在账号页按钮 → `/admin/campus-booking`。
 - 干事操作见 `OPS.md`；本地开发与迁移概览见 `README.md`。
 - 观众入校页：`src/app/campus-entry/page.tsx`；旧版预约填写（管理员）：`src/app/admin/campus-booking/page.tsx`。
 - 管理员下单可超过每人/每单 5 张（仍受余票与单笔上限 100）：前端与 `createOrderAction` 已上线；**生产库还需执行**迁移 `20261109110000_admin_bypass_ticket_limit.sql`，否则 RPC 仍会拦管理员。

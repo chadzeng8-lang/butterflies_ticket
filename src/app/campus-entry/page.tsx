@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CampusGuideSteps } from "@/components/CampusGuideSteps";
 import { SiteHeader } from "@/components/SiteHeader";
+import { VenueMap } from "@/components/VenueMap";
 import {
   CAMPUS_ROUTE_META,
   CAMPUS_ROUTE_STEPS,
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "入校指南",
-  description: "香港中文大学（深圳）入校扫码登记与到场路线 · 《蝶》观众专用",
+  description: "香港中文大学（深圳）入校预约查询与到场路线 · 《蝶》观众专用",
 };
 
 export default function CampusEntryPage() {
@@ -23,12 +24,35 @@ export default function CampusEntryPage() {
       </section>
 
       <section className="panel campus-entry-summary">
-        <h2>扫码登记</h2>
-        <p className="muted">请使用微信扫描下方二维码完成入校登记。</p>
-        <div className="campus-entry-qr-placeholder" aria-live="polite">
-          <span className="campus-entry-qr-box" aria-hidden />
-          <p className="notice">二维码暂未开放，开放后将在此展示。</p>
-        </div>
+        <h2>入校预约</h2>
+        <p>
+          <strong>11.21（周六）公众场：</strong>
+          观众入校预约由工作人员统一提交，无需自行扫码预约。工作人员提交后，你可通过学校访客系统查询是否预约成功：
+        </p>
+        <p style={{ marginTop: "0.75rem" }}>
+          <a
+            className="btn"
+            href="https://visitcampus.cuhk.edu.cn/h5/admission-tours-q"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            查询预约结果
+          </a>
+        </p>
+        <p className="muted" style={{ marginTop: "0.9rem" }}>
+          查询页：
+          <a
+            href="https://visitcampus.cuhk.edu.cn/h5/admission-tours-q"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            visitcampus.cuhk.edu.cn/h5/admission-tours-q
+          </a>
+        </p>
+        <p className="muted" style={{ marginTop: "0.9rem" }}>
+          <strong>11.22（周日）校内场：</strong>
+          面向港中大 / 港中深同学及教职工，请按学校日常入校要求携带有效证件或校园卡到场。
+        </p>
       </section>
 
       <section className="panel campus-entry-summary">
@@ -40,6 +64,9 @@ export default function CampusEntryPage() {
             <dd>{CAMPUS_ROUTE_META.venue}</dd>
           </div>
         </dl>
+        <div style={{ marginTop: "1rem" }}>
+          <VenueMap />
+        </div>
       </section>
 
       <CampusGuideSteps
@@ -50,8 +77,10 @@ export default function CampusEntryPage() {
       <section className="panel">
         <h2>温馨提示</h2>
         <div className="meta">
-          <span>入校登记二维码开放后，请提前完成扫码登记。</span>
-          <span>入校时请按现场要求出示登记凭证；私家车不能入校。</span>
+          <span>
+            周六公众场入校预约由工作人员提交；可用上方链接核对是否成功。
+          </span>
+          <span>入校时请按现场要求出示预约成功凭证或有效证件；私家车不能入校。</span>
           <span>如有疑问，请及时联系主办方。</span>
         </div>
         <div className="row" style={{ marginTop: "1.1rem" }}>

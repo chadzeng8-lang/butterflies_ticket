@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useRef } from "react";
 
+/** 群码过期替换图片后改此版本，避免浏览器 / Next 图片缓存仍显示旧码 */
+const WECHAT_GROUP_QR_SRC = "/images/wechat-audience-group.jpg?v=20261119";
+
 export function OrderWechatGroup() {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -20,13 +23,14 @@ export function OrderWechatGroup() {
           aria-label="放大查看微信观演群二维码"
         >
           <Image
-            src="/images/wechat-audience-group.jpg"
+            src={WECHAT_GROUP_QR_SRC}
             alt="微信群「港中深观剧群」邀请二维码"
             width={720}
             height={1280}
             className="order-wechat-group-image"
             sizes="(max-width: 720px) 90vw, 320px"
             priority
+            unoptimized
           />
         </button>
       </figure>
@@ -46,7 +50,7 @@ export function OrderWechatGroup() {
           </button>
         </form>
         <img
-          src="/images/wechat-audience-group.jpg"
+          src={WECHAT_GROUP_QR_SRC}
           alt="微信群「港中深观剧群」邀请二维码"
         />
       </dialog>

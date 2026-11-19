@@ -213,6 +213,8 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const showIdRaw = url.searchParams.get("showId");
   const showId = showIdRaw ? Number(showIdRaw) : null;
+  const scopeRaw = String(url.searchParams.get("scope") || "issued").trim();
+  const scope = scopeRaw === "all" ? "all" : "issued";
 
   const { data: orderData, error: ordersError } = await supabase
     .from("orders")
@@ -232,14 +234,17 @@ export async function GET(request: Request) {
   }
   const shows = (showData || []) as OnlineShow[];
   const showsById = new Map(shows.map((show) => [show.id, show]));
-  // 购票编号仍按全量订单顺序计算，与后台一致；名单只导出已出票。
+  // 购票编号始终按全量订单顺序计算，与后台一致。
   const purchaseNumbers = purchaseNumbersByShow(orders);
-  const issuedOrders = orders.filter((order) => order.status === "issued");
+  const scopedOrders =
+    scope === "all"
+      ? orders
+      : orders.filter((order) => order.status === "issued");
 
   const filtered =
     showId && Number.isFinite(showId)
-      ? issuedOrders.filter((order) => order.show_id === showId)
-      : issuedOrders;
+      ? scopedOrders.filter((order) => order.show_id === showId)
+      : scopedOrders;
 
   const orderIds = filtered.map((order) => order.id);
   const attendeesByOrder = new Map<number, AttendeeRow[]>();
@@ -291,7 +296,8 @@ export async function GET(request: Request) {
   const stamp = new Date().toISOString().slice(0, 10);
   const showSuffix =
     showId && Number.isFinite(showId) ? `-show-${showId}` : "";
-  const filename = `orders${showSuffix}-${stamp}.xls`;
+  const scopeSuffix = scope === "all" ? "-all" : "-issued";
+  const filename = `orders${scopeSuffix}${showSuffix}-${stamp}.xls`;
 
   return new NextResponse(xml, {
     headers: {

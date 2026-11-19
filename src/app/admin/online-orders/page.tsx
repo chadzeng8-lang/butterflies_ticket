@@ -294,12 +294,21 @@ export default async function OnlineOrdersPage({
       <section className="hero">
         <h1>在线订单管理</h1>
         <p>
-          各场次购票编号从 1 起按下单顺序固定。可勾选后批量改状态或删除；也可导出表格到现场核对。
+          各场次购票编号从 1 起按下单顺序固定。可勾选后批量改状态或删除；也可导出已出票或全部订单表格。
         </p>
         <AdminSectionNav current="orders" />
         <div className="admin-hero-actions">
-          <Link className="btn secondary" href="/admin/online-orders/export">
-            导出全部 Excel
+          <Link
+            className="btn secondary"
+            href="/admin/online-orders/export?scope=issued"
+          >
+            导出已出票
+          </Link>
+          <Link
+            className="btn secondary"
+            href="/admin/online-orders/export?scope=all"
+          >
+            导出全部订单
           </Link>
         </div>
       </section>

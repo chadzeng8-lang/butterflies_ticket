@@ -375,9 +375,15 @@ export function OnlineOrdersBulkPanel({ groups }: { groups: BulkOrderGroup[] }) 
                 </p>
                 <Link
                   className="btn secondary"
-                  href={`/admin/online-orders/export?showId=${group.showId}`}
+                  href={`/admin/online-orders/export?scope=issued&showId=${group.showId}`}
                 >
-                  导出本场
+                  导出本场已出票
+                </Link>
+                <Link
+                  className="btn secondary"
+                  href={`/admin/online-orders/export?scope=all&showId=${group.showId}`}
+                >
+                  导出本场全部
                 </Link>
               </div>
             </div>
