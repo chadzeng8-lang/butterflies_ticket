@@ -17,7 +17,11 @@ import {
   type AttendeeIdMode,
 } from "@/lib/attendees";
 import { showUsesStudentId } from "@/lib/show-audience";
-import { isTicketSaleOpen, ticketSaleClosedMessage } from "@/lib/ticket-sale";
+import {
+  isTicketSaleEnded,
+  isTicketSaleOpen,
+  ticketSaleClosedMessage,
+} from "@/lib/ticket-sale";
 
 function resolveIdMode(startsAt: string | null | undefined): AttendeeIdMode {
   return startsAt && showUsesStudentId(startsAt) ? "student_id" : "id_card";
@@ -86,6 +90,9 @@ export async function createOrderAction(
     const buyerName = attendees[0].fullName;
     const phone = attendees[0].phone;
 
+    if (isTicketSaleEnded()) {
+      return { error: ticketSaleClosedMessage() };
+    }
     if (!isTicketSaleOpen() && !isAdmin) {
       return { error: ticketSaleClosedMessage() };
     }

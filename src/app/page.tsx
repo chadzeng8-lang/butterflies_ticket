@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { StageGallery } from "@/components/StageGallery";
 import { depositHeroNote } from "@/lib/pricing-copy";
 import { SHOW_AUDIENCE_SUMMARY_LINES } from "@/lib/show-audience";
-import { isTicketSaleOpen, ticketSaleOpensLabel } from "@/lib/ticket-sale";
+import { isTicketSaleOpen, ticketSaleCtaLabel } from "@/lib/ticket-sale";
 
 export const revalidate = 300;
 
@@ -163,7 +163,7 @@ export default async function HomePage() {
               </Link>
             ) : (
               <button className="btn booking-button" disabled>
-                {`${ticketSaleOpensLabel()} 开票`}
+                {ticketSaleCtaLabel()}
               </button>
             )}
           </div>
@@ -275,7 +275,7 @@ export default async function HomePage() {
           <Link className="btn" href="/shows">选择场次并登记 <span aria-hidden>→</span></Link>
         ) : (
           <button className="btn" disabled>
-            {`${ticketSaleOpensLabel()} 开票`}
+            {ticketSaleCtaLabel()}
           </button>
         )}
       </section>

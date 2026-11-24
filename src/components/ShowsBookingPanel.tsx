@@ -7,7 +7,9 @@ import { formatShowTime } from "@/lib/format";
 import { audiencePricingSummary, depositHeroNote } from "@/lib/pricing-copy";
 import { showAudienceLabel } from "@/lib/show-audience";
 import {
+  isTicketSaleEnded,
   ticketSaleClosedMessage,
+  ticketSaleCtaLabel,
   ticketSaleOpensLabel,
 } from "@/lib/ticket-sale";
 import type { Show } from "@/lib/types";
@@ -20,8 +22,9 @@ export function ShowsBookingPanel({
   saleOpen: boolean;
 }) {
   const isAdmin = useIsAdmin();
+  const saleEnded = isTicketSaleEnded();
   const firstOpen = shows[0];
-  const canBook = Boolean(firstOpen) && (saleOpen || isAdmin);
+  const canBook = Boolean(firstOpen) && (saleOpen || (isAdmin && !saleEnded));
 
   return (
     <>
@@ -57,15 +60,17 @@ export function ShowsBookingPanel({
           </a>
         ) : (
           <button className="btn booking-button" disabled>
-            {firstOpen ? `${ticketSaleOpensLabel()} 开票` : "暂无余席"}
+            {firstOpen ? ticketSaleCtaLabel() : "暂无余席"}
           </button>
         )}
       </div>
       {!saleOpen && (
         <p className="notice" style={{ marginBottom: "1.25rem" }}>
-          {isAdmin
-            ? `尚未到公开开票时间（${ticketSaleOpensLabel()}）。你已以管理员登录，可提前登记。`
-            : ticketSaleClosedMessage()}
+          {saleEnded
+            ? ticketSaleClosedMessage()
+            : isAdmin
+              ? `尚未到公开开票时间（${ticketSaleOpensLabel()}）。你已以管理员登录，可提前登记。`
+              : ticketSaleClosedMessage()}
         </p>
       )}
       <PendingLink className="ticket-lookup-link" href="/tickets" pendingLabel="加载中…">
@@ -102,7 +107,13 @@ export function ShowsBookingPanel({
                 </div>
                 <div className="show-availability">
                   <span className={`badge ${canBook ? "success" : "warn"}`}>
-                    {saleOpen ? "开放登记" : isAdmin ? "管理员可登记" : "待开票"}
+                    {saleOpen
+                      ? "开放登记"
+                      : saleEnded
+                        ? "购票已结束"
+                        : isAdmin
+                          ? "管理员可登记"
+                          : "待开票"}
                   </span>
                 </div>
                 {canBook ? (
@@ -115,7 +126,7 @@ export function ShowsBookingPanel({
                   </PendingLink>
                 ) : (
                   <button className="btn show-booking-button" disabled>
-                    {ticketSaleOpensLabel()} 开票
+                    {ticketSaleCtaLabel()}
                   </button>
                 )}
               </article>

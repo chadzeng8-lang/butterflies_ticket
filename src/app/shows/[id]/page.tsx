@@ -13,9 +13,10 @@ import {
 } from "@/lib/supabase/server";
 import { getSupabaseShow } from "@/lib/supabase/shows";
 import {
+  isTicketSaleEnded,
   isTicketSaleOpen,
   ticketSaleClosedMessage,
-  ticketSaleOpensLabel,
+  ticketSaleCtaLabel,
 } from "@/lib/ticket-sale";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,8 @@ export default async function ShowPage({
   const user = await getSupabaseUser(supabase);
   const isAdmin = await isCurrentUserTicketingAdmin(supabase);
   const saleOpen = isTicketSaleOpen();
-  const canRegister = saleOpen || isAdmin;
+  const saleEnded = isTicketSaleEnded();
+  const canRegister = saleOpen || (isAdmin && !saleEnded);
   const audience = showAudienceLabel(show.startsAt);
 
   let remainingSeats = show.capacity;
@@ -70,9 +72,11 @@ export default async function ShowPage({
           <span className="chip-tag">场次</span>
           {saleOpen
             ? "开放登记"
-            : isAdmin
-              ? "管理员可提前登记"
-              : `${ticketSaleOpensLabel()} 开票`}
+            : saleEnded
+              ? "购票已结束"
+              : isAdmin
+                ? "管理员可提前登记"
+                : ticketSaleCtaLabel()}
         </div>
         <h1>{formatShowTime(show.startsAt)}</h1>
         <p>
@@ -117,7 +121,7 @@ export default async function ShowPage({
           <h2>登记信息</h2>
           {!canRegister ? (
             <div className="notice">
-              <strong>尚未开票</strong>
+              <strong>{saleEnded ? "购票已结束" : "尚未开票"}</strong>
               <p>{ticketSaleClosedMessage()}</p>
             </div>
           ) : !user ? (

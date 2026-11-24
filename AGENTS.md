@@ -36,7 +36,7 @@
 - 演出：音乐剧《蝶》学生版，2026-11-21 至 2026-11-22，香港中文大学（深圳）时光胶囊黑匣子，普通话，约 150 分钟。
 - 11.21 面向公众人士；11.22 仅开放给香港中文大学及香港中文大学（深圳）的同学及教职工（展示提示，报名不强制校验身份）。
 - 公益免费入场，每张票需缴 ¥50 或 HK$60 按金，到场观演后全额退还。
-- 开票时间：2026-11-09 20:00（香港时间），由 `src/lib/ticket-sale.ts` 控制；普通用户未到点不可登记。管理员登录后可无视开票时间直接在 `/shows` 报名。
+- 开票时间：2026-11-09 20:00（香港时间）；停售：2026-11-22 23:59:59（香港时间），由 `src/lib/ticket-sale.ts` 控制。停售后全体不可新登记；停售前管理员可无视开票时间提前报名。
 - 人格测试共 24 题。
 
 ## 本地开始
@@ -68,7 +68,7 @@ git status --short
 - 首页与演出介绍：`src/app/page.tsx`
 - 购票页与观演须知：`src/app/shows/page.tsx`、`src/components/ShowsBookingPanel.tsx`
 - 场次开放对象文案：`src/lib/show-audience.ts`
-- 开票时间：`src/lib/ticket-sale.ts`
+- 开票 / 停售时间：`src/lib/ticket-sale.ts`
 - 全站样式、响应式布局、字体：`src/app/globals.css`
 - 根布局与简繁转换 Provider：`src/app/layout.tsx`、`src/components/LocaleProvider.tsx`
 - 网站导航：`src/components/SiteHeader.tsx`、`src/components/SiteHeaderClient.tsx`
