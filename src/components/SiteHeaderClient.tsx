@@ -29,11 +29,15 @@ export function SiteHeaderClient({ siteName }: { siteName: string }) {
           </Link>
           <nav className="nav">
             <Link href="/">首页</Link>
-            <Link href="/shows">购票</Link>
-            <Link href="/tickets">票夹</Link>
-            <Link href="/campus-entry">入校指南</Link>
+            <Link href="/about">关于《蝶》</Link>
+            <Link href="/script">剧情</Link>
+            <Link href="/cast">演出卡司</Link>
+            <Link href="/rehearsal">排演日程</Link>
+            <Link href="/shows">演出</Link>
             <Link href="/personality">人格测试</Link>
+            <Link href="/tickets">票夹</Link>
             <Link href="/account">账号</Link>
+            {isAdmin && <Link href="/campus-entry">入校指南</Link>}
             {isAdmin && <Link href="/admin/online-orders">管理</Link>}
           </nav>
         </div>

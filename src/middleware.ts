@@ -4,9 +4,18 @@ import { NextResponse, type NextRequest } from "next/server";
 function needsSessionRefresh(pathname: string) {
   if (
     pathname === "/" ||
+    pathname === "/about" ||
+    pathname === "/script" ||
+    pathname.startsWith("/script/") ||
+    pathname === "/rehearsal" ||
+    pathname.startsWith("/rehearsal/") ||
     pathname === "/shows" ||
     pathname === "/personality" ||
-    pathname === "/campus-entry" ||
+    pathname === "/characters" ||
+    pathname.startsWith("/characters/") ||
+    pathname === "/cast" ||
+    pathname === "/lyrics" ||
+    pathname.startsWith("/lyrics/") ||
     pathname === "/privacy"
   ) {
     return false;

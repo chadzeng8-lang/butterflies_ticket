@@ -174,7 +174,6 @@ export default async function OrderPage({
 
         <p>
           <Link href="/tickets">去票夹查询</Link> ·{" "}
-          <Link href="/campus-entry">入校登记</Link> ·{" "}
           <Link href="/">返回首页</Link>
         </p>
       </div>

@@ -4,11 +4,10 @@ import { NavigationBusyBinder } from "@/components/NavigationProgress";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SITE_NAME } from "@/lib/site";
 import "./globals.css";
-import { PrivacyNotice } from "@/components/PrivacyNotice";
 
 export const metadata: Metadata = {
   title: SITE_NAME,
-  description: "香港中文大学音乐剧社年度大戏《蝶》沉浸版展演 · 公益登记与按金退还",
+  description: "香港中文大学音乐剧社学生版《蝶》官方主页 · 故事、卡司、歌词与演出资讯",
 };
 
 export const viewport: Viewport = {
@@ -25,7 +24,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           {children}
           <SiteFooter />
-          <PrivacyNotice />
         </LocaleProvider>
       </body>
     </html>

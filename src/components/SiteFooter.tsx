@@ -14,7 +14,11 @@ export function SiteFooter() {
         <div className="footer-note">
           <span>CU Musical · 香港中文大学音乐剧社</span>
           <span className="footer-note-links">
-            <Link href="/shows">报名购票</Link>
+            <Link href="/about">关于《蝶》</Link>
+            <Link href="/script">剧情</Link>
+            <Link href="/rehearsal">排演日程</Link>
+            <Link href="/shows">演出</Link>
+            <Link href="/cast">演出卡司</Link>
             <Link href="/privacy">个人信息收集声明</Link>
           </span>
         </div>

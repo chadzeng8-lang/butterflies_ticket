@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CampusGuideSteps } from "@/components/CampusGuideSteps";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VenueMap } from "@/components/VenueMap";
@@ -6,21 +7,35 @@ import {
   CAMPUS_ROUTE_META,
   CAMPUS_ROUTE_STEPS,
 } from "@/lib/campus-entry-guide";
+import { createSupabaseServerClient, getSupabaseUser } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "入校指南",
-  description: "香港中文大学（深圳）入校预约查询与到场路线 · 《蝶》观众专用",
+  description: "香港中文大学（深圳）入校预约查询与到场路线 · 管理员内部参考",
 };
 
-export default function CampusEntryPage() {
+export default async function CampusEntryPage() {
+  const supabase = await createSupabaseServerClient();
+  const user = await getSupabaseUser(supabase);
+  if (!user) redirect("/account");
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (error) throw new Error("ADMIN_LOOKUP_FAILED");
+  if (profile?.role !== "admin") redirect("/account");
+
   return (
     <main className="shell shell-narrow">
       <SiteHeader />
 
       <section className="hero">
         <h1>入校指南</h1>
+        <p className="muted">仅管理员可见 · 港中深场次内部参考</p>
       </section>
 
       <section className="panel campus-entry-summary">
@@ -84,11 +99,11 @@ export default function CampusEntryPage() {
           <span>如有疑问，请及时联系主办方。</span>
         </div>
         <div className="row" style={{ marginTop: "1.1rem" }}>
-          <Link className="btn" href="/shows">
-            返回选场次
+          <Link className="btn" href="/admin/online-orders">
+            返回订单管理
           </Link>
-          <Link className="btn secondary" href="/tickets">
-            我的票夹
+          <Link className="btn secondary" href="/admin/campus-booking">
+            旧版预约填写指南
           </Link>
         </div>
       </section>
